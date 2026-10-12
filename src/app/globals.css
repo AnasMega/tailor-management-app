@@ -1,0 +1,60 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-slate-50 text-slate-900 antialiased;
+  }
+}
+
+/* Modern Web Guidance: Required Field Feedback (:user-invalid + fallback) */
+input:user-invalid,
+select:user-invalid,
+textarea:user-invalid,
+input.user-invalid-fallback,
+select.user-invalid-fallback,
+textarea.user-invalid-fallback {
+  border-color: #d93025 !important;
+  background-color: #fce8e6 !important;
+}
+
+.field-error-msg {
+  display: none;
+  color: #d93025;
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
+  font-weight: 500;
+}
+
+input:user-invalid + .field-error-msg,
+input.user-invalid-fallback + .field-error-msg {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+/* Print Styles for Tailor Order Parchi / Invoice / Naap Slip */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #printable-parchi-area,
+  #printable-parchi-area * {
+    visibility: visible;
+  }
+  #printable-parchi-area {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    box-shadow: none !important;
+    border: none !important;
+    background: white !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+}
