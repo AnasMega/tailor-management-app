@@ -930,19 +930,23 @@ export default function TailorManagementApp() {
                 label: "Shop Branches",
                 icon: Store,
                 badge: `${activeShops.length}/${shops.length}`,
+                hidden: !!currentUser?.shop_id,
               },
               {
                 id: "settings",
                 label: "Users & Settings",
                 icon: Settings,
+                hidden: !!currentUser?.shop_id,
               },
-            ].map((item) => {
-              const Icon = item.icon;
-              const isActive = activeTab === item.id;
-              return (
-                <button
-                  key={item.id}
-                  type="button"
+            ]
+              .filter((item) => !item.hidden)
+              .map((item) => {
+                const Icon = item.icon;
+                const isActive = activeTab === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
                   onClick={() => {
                     setActiveTab(item.id as ActiveTab);
                     setIsMobileMenuOpen(false);
