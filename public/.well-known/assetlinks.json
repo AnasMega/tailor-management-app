@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "app.vercel.tailor_management_app_opal.twa",
+        "sha256_cert_fingerprints": ["A3:6C:BA:61:AA:F3:17:A2:51:AD:65:2D:B7:80:31:42:D7:19:E2:FC:2C:AA:D3:60:27:D1:5C:42:3C:40:72:EA"]
+      }
+    }]
