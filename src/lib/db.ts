@@ -245,21 +245,76 @@ export async function ensureDbInitialized() {
       ADD COLUMN IF NOT EXISTS complaint_count INTEGER DEFAULT 0;
     `);
 
+    // Seed default Shop if empty
+    const shopCountRes = await client.query("SELECT COUNT(*) FROM shops");
+    if (parseInt(shopCountRes.rows[0].count, 10) === 0) {
+      await client.query(`
+        INSERT INTO shops (name, branch_code, phone, whatsapp, address, receipt_footer, is_active)
+        VALUES ('Royal Tailors Main Branch', 'MAIN-01', '0300-1234567', '0300-1234567', 'Shop #12, Commercial Market, Saddar', 'Shukriya! Delivery ke waqt yeh Parchi zaroor saath layein.', true);
+      `);
+    }
+
+    // Seed default User (Admin) if empty
+    const userCountRes = await client.query("SELECT COUNT(*) FROM users");
+    if (parseInt(userCountRes.rows[0].count, 10) === 0) {
+      await client.query(`
+        INSERT INTO users (username, password, full_name, role, phone)
+        VALUES ('admin', 'admin123', 'Master Anas (Owner / Admin)', 'admin', '0300-1234567');
+      `);
+    }
+
+    // Seed default Garment Types if empty
+    const garmentCountRes = await client.query("SELECT COUNT(*) FROM garment_types");
+    if (parseInt(garmentCountRes.rows[0].count, 10) === 0) {
+      const easternFields = JSON.stringify([
+        "kameez_length", "tera", "bazu", "chest", "waist", "ghera", "collar", "shalwar_length", "paincha"
+      ]);
+      const westernFields = JSON.stringify([
+        "shirt_length", "tera", "bazu", "chest", "waist", "collar", "pant_length", "pant_waist", "hip", "thigh", "bottom"
+      ]);
+      const formalFields = JSON.stringify([
+        "coat_length", "tera", "bazu", "chest", "waist", "hip", "collar"
+      ]);
+
+      await client.query(`
+        INSERT INTO garment_types (name, category, base_price, urgent_surcharge, effective_month, measurement_fields, is_active)
+        VALUES
+          ('Shalwar Kameez (Simple Silai)', 'Eastern', 1800, 500, 'October 2026', '${easternFields}'::jsonb, true),
+          ('Shalwar Kameez (Double Silai / Chamak)', 'Eastern', 2200, 600, 'October 2026', '${easternFields}'::jsonb, true),
+          ('Kurta Pajama (Formal)', 'Eastern', 1700, 400, 'October 2026', '${easternFields}'::jsonb, true),
+          ('Dress Shirt', 'Western', 1400, 400, 'October 2026', '${westernFields}'::jsonb, true),
+          ('Dress Trouser / Pant', 'Western', 1600, 400, 'October 2026', '${westernFields}'::jsonb, true),
+          ('Pant Shirt (Complete Pair)', 'Western', 3000, 800, 'October 2026', '${westernFields}'::jsonb, true),
+          ('Safari Suit', 'Formal', 3200, 800, 'October 2026', '${formalFields}'::jsonb, true),
+          ('Waistcoat (Waskat Bespoke)', 'Formal', 3500, 1000, 'October 2026', '${formalFields}'::jsonb, true),
+          ('Kids Shalwar Kameez', 'Kids', 1300, 300, 'October 2026', '${easternFields}'::jsonb, true);
+      `);
+    }
+
     // Seed initial Rate History & Historical Orders if garment_rate_history is empty
     const rateHistCountRes = await client.query(
       "SELECT COUNT(*) FROM garment_rate_history"
     );
     if (parseInt(rateHistCountRes.rows[0].count, 10) === 0) {
-      await client.query(`
-        INSERT INTO garment_rate_history (
-          garment_type_id, garment_name, category, old_price, new_price,
-          old_urgent_surcharge, new_urgent_surcharge, effective_month, changed_by, notes, changed_at
-        ) VALUES
-          (1, 'Shalwar Kameez (Simple Silai)', 'Eastern', 1600, 1800, 400, 500, 'October 2026', 'Master Anas (Owner / Admin)', 'New season standard silai rate revision', CURRENT_TIMESTAMP - INTERVAL '15 days'),
-          (2, 'Shalwar Kameez (Double Silai / Chamak)', 'Eastern', 2000, 2200, 500, 600, 'October 2026', 'Master Anas (Owner / Admin)', 'Imported thread & buckram cost update', CURRENT_TIMESTAMP - INTERVAL '15 days'),
-          (6, 'Pant Shirt (Complete Pair)', 'Western', 2800, 3000, 600, 800, 'October 2026', 'Master Anas (Owner / Admin)', 'Updated bespoke trouser & shirt rate', CURRENT_TIMESTAMP - INTERVAL '10 days'),
-          (9, 'Waistcoat (Waskat Bespoke)', 'Formal', 3200, 3500, 800, 1000, 'October 2026', 'Ustad Rasheed (Head Cutter)', 'Wedding season waistcoat rate', CURRENT_TIMESTAMP - INTERVAL '5 days');
-      `);
+      const gTypes = await client.query("SELECT id, name, category, base_price, urgent_surcharge FROM garment_types ORDER BY id ASC");
+      if (gTypes.rows.length > 0) {
+        for (const gt of gTypes.rows.slice(0, 4)) {
+          await client.query(`
+            INSERT INTO garment_rate_history (
+              garment_type_id, garment_name, category, old_price, new_price,
+              old_urgent_surcharge, new_urgent_surcharge, effective_month, changed_by, notes, changed_at
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, 'October 2026', 'Master Anas (Owner / Admin)', 'Standard season silai rate', CURRENT_TIMESTAMP - INTERVAL '15 days')
+          `, [
+            gt.id,
+            gt.name,
+            gt.category,
+            Math.max(0, Number(gt.base_price) - 200),
+            Number(gt.base_price),
+            Math.max(0, Number(gt.urgent_surcharge) - 100),
+            Number(gt.urgent_surcharge),
+          ]);
+        }
+      }
 
       // Also seed a previous month order (September 2026) so Monthly Sale vs Purani Sale report has multi-month data out of the box
       const prevOrdCheck = await client.query(
