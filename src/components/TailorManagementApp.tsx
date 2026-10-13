@@ -59,6 +59,8 @@ import {
   ChevronLeft,
   ChevronRight,
   X,
+  Download,
+  Database,
 } from "lucide-react";
 
 type ActiveTab =
@@ -171,10 +173,59 @@ export default function TailorManagementApp() {
     phone: "",
   });
 
+  // Backup State
+  const [isBackingUp, setIsBackingUp] = useState(false);
+  const [showDailyBackupPrompt, setShowDailyBackupPrompt] = useState(false);
+
   const showToast = (msg: string) => {
     setToastMsg(msg);
     setTimeout(() => setToastMsg(""), 4000);
   };
+
+  const handleDownloadBackup = async (isAuto = false) => {
+    setIsBackingUp(true);
+    try {
+      const response = await fetch("/api/backup");
+      if (!response.ok) {
+        throw new Error("Backup download failed");
+      }
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      const todayStr = new Date().toISOString().slice(0, 10);
+      a.download = `royal_tailor_backup_${todayStr}.sql`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+
+      // Save today's date in localStorage
+      localStorage.setItem("last_backup_date", todayStr);
+      setShowDailyBackupPrompt(false);
+      showToast(
+        isAuto
+          ? "✅ Aaj ka Daily Database Backup kamyabi se download ho gaya!"
+          : "✅ Complete Live Database (.sql) download ho gaya!"
+      );
+    } catch (err) {
+      console.error(err);
+      alert("Database backup download karne mein masla hua. Dobara koshish karein.");
+    } finally {
+      setIsBackingUp(false);
+    }
+  };
+
+  // Daily backup prompt check on user login
+  useEffect(() => {
+    if (currentUser) {
+      const todayStr = new Date().toISOString().slice(0, 10);
+      const lastBackup = localStorage.getItem("last_backup_date");
+      if (lastBackup !== todayStr) {
+        setShowDailyBackupPrompt(true);
+      }
+    }
+  }, [currentUser]);
 
   const fetchAllData = useCallback(
     async (shopFilter = selectedShopId) => {
@@ -1030,6 +1081,21 @@ export default function TailorManagementApp() {
 
             <button
               type="button"
+              onClick={() => handleDownloadBackup(false)}
+              disabled={isBackingUp}
+              className="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 text-xs font-black flex items-center gap-1.5 shadow-sm transition disabled:opacity-50"
+              title="1-Click Live Database SQL Backup Download"
+            >
+              <Download
+                className={`w-3.5 h-3.5 ${isBackingUp ? "animate-bounce" : ""}`}
+              />
+              <span className="hidden md:inline">
+                {isBackingUp ? "Downloading..." : "Backup DB"}
+              </span>
+            </button>
+
+            <button
+              type="button"
               onClick={() => fetchAllData()}
               className="p-1.5 sm:p-2 rounded-xl border border-slate-200 hover:bg-slate-100 text-slate-600 transition"
               title="Refresh Database Data"
@@ -1066,6 +1132,39 @@ export default function TailorManagementApp() {
             </button>
           </div>
         </header>
+
+        {/* Daily Backup Reminder Banner */}
+        {showDailyBackupPrompt && (
+          <div className="no-print bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 text-slate-950 px-4 sm:px-6 py-2.5 flex flex-wrap items-center justify-between gap-3 shadow-sm border-b border-amber-600/20">
+            <div className="flex items-center gap-2.5 text-xs font-bold">
+              <span className="p-1 rounded-lg bg-black/10 shrink-0">
+                <Database className="w-4 h-4" />
+              </span>
+              <span>
+                <strong>Rozana ka Backup Reminder:</strong> Aaj ka live database backup download nahi hua hai. Apne computer/laptop mein safe copy rakhein!
+              </span>
+            </div>
+            <div className="flex items-center gap-2 ml-auto">
+              <button
+                type="button"
+                onClick={() => handleDownloadBackup(true)}
+                disabled={isBackingUp}
+                className="px-3 py-1 rounded-xl bg-slate-950 hover:bg-slate-800 text-white text-xs font-black flex items-center gap-1.5 shadow-sm transition"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>{isBackingUp ? "Downloading..." : "1-Click Download Aaj Ka Backup"}</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowDailyBackupPrompt(false)}
+                className="p-1 rounded-lg hover:bg-black/10 text-slate-900 transition"
+                title="Dismiss Reminder"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Page Content Container */}
         <main className="p-4 sm:p-6 space-y-6 flex-1 overflow-y-auto">
@@ -3307,6 +3406,37 @@ export default function TailorManagementApp() {
                         </span>
                       </div>
                     ))}
+                  </div>
+                </div>
+
+                {/* Database Backup & Disaster Recovery Card */}
+                <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl border border-amber-200/80 shadow-sm p-5">
+                  <div className="flex items-start gap-3">
+                    <div className="p-3 bg-amber-500 text-slate-950 rounded-xl font-bold">
+                      <Database className="w-5 h-5" />
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="font-extrabold text-sm text-slate-900">
+                        1-Click Database Backup (.sql)
+                      </h4>
+                      <p className="text-xs text-slate-600 mt-1 leading-relaxed">
+                        Aapka poora live Neon Cloud PostgreSQL database (Orders, Customers, Naap Book, Udhaar Khata, Rates, Audit Logs) ek standard <code>.sql</code> file format mein seedha aapke laptop / mobile mein download ho jayega.
+                      </p>
+                      <div className="mt-4 flex flex-wrap items-center gap-3">
+                        <button
+                          type="button"
+                          onClick={() => handleDownloadBackup(false)}
+                          disabled={isBackingUp}
+                          className="px-4 py-2.5 rounded-xl bg-slate-950 hover:bg-slate-800 text-white font-extrabold text-xs flex items-center gap-2 shadow-md transition disabled:opacity-50"
+                        >
+                          <Download className={`w-4 h-4 ${isBackingUp ? "animate-bounce" : ""}`} />
+                          <span>{isBackingUp ? "Generating & Downloading Backup..." : "Download Live Database Backup Now"}</span>
+                        </button>
+                        <span className="text-[11px] text-slate-500 font-bold">
+                          Daily reminder har subah automatically notification dega
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
