@@ -4,7 +4,7 @@ const globalForPg = global as unknown as { pgPool: Pool };
 
 const connectionString =
   process.env.DATABASE_URL ||
-  "postgresql://postgres:12345678@localhost:5432/tailor_management_db";
+  "postgresql://neondb_owner:npg_jVBItKRrd05W@ep-rapid-snow-b4yaot5j-pooler.c-6.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require";
 
 const isLocalDb =
   connectionString.includes("localhost") ||
