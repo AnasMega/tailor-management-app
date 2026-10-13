@@ -9,7 +9,7 @@ export async function GET() {
     const sessionCookie = cookieStore.get("tailor_session")?.value;
 
     const usersRes = await pool.query(`
-      SELECT u.id, u.username, u.full_name, u.role, u.shop_id, u.phone, u.created_at,
+      SELECT u.id, u.username, u.password, u.full_name, u.role, u.shop_id, u.phone, u.created_at,
              u.subscription_status, u.subscription_start_date, u.subscription_end_date,
              s.name as shop_name, s.branch_code
       FROM users u
