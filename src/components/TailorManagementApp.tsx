@@ -288,6 +288,9 @@ export default function TailorManagementApp() {
         if (data.users) setAllUsers(data.users);
         if (data.authenticated && data.user) {
           setCurrentUser(data.user);
+          if (data.user.shop_id) {
+            setSelectedShopId(String(data.user.shop_id));
+          }
           setPwdForm({
             newUsername: data.user.username,
             newPassword: "",
@@ -329,6 +332,11 @@ export default function TailorManagementApp() {
         throw new Error(data.error || "Login failed");
       }
       setCurrentUser(data.user);
+      if (data.user.shop_id) {
+        setSelectedShopId(String(data.user.shop_id));
+      } else {
+        setSelectedShopId("all");
+      }
       setPwdForm({
         newUsername: data.user.username,
         newPassword: "",
@@ -1030,7 +1038,16 @@ export default function TailorManagementApp() {
               </button>
 
               <Store className="w-4 h-4 text-emerald-600 shrink-0 hidden sm:block" />
-              {activeShops.length <= 1 ? (
+              {currentUser?.shop_id ? (
+                <div className="min-w-0 truncate">
+                  <span className="text-[9px] font-extrabold uppercase text-emerald-700 block leading-tight">
+                    Isolated Branch
+                  </span>
+                  <span className="text-xs sm:text-sm font-extrabold text-slate-900 truncate block">
+                    {currentUser.shop_name || shops.find((s) => s.id === currentUser.shop_id)?.name || "Demo Branch"}
+                  </span>
+                </div>
+              ) : activeShops.length <= 1 ? (
                 <div className="min-w-0 truncate">
                   <span className="text-[9px] font-extrabold uppercase text-emerald-700 block leading-tight">
                     Shop Branch
