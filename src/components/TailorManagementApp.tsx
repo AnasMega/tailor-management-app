@@ -55,6 +55,10 @@ import {
   Wrench,
   Lock,
   RotateCcw,
+  Menu,
+  ChevronLeft,
+  ChevronRight,
+  X,
 } from "lucide-react";
 
 type ActiveTab =
@@ -80,6 +84,8 @@ export default function TailorManagementApp() {
   // Navigation & Global Filter
   const [activeTab, setActiveTab] = useState<ActiveTab>("dashboard");
   const [selectedShopId, setSelectedShopId] = useState<string>("all");
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
 
   // Core Data from PostgreSQL
   const [shops, setShops] = useState<Shop[]>([]);
@@ -745,74 +751,119 @@ export default function TailorManagementApp() {
         </div>
       )}
 
-      {/* SIDEBAR NAVIGATION */}
-      <aside className="no-print w-full lg:w-64 bg-slate-900 text-white shrink-0 flex flex-col justify-between">
-        <div>
-          {/* Brand Logo */}
-          <div className="p-5 border-b border-slate-800 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="p-2.5 rounded-xl bg-emerald-500 text-slate-950 font-black shadow-lg">
-                <Scissors className="w-6 h-6" />
+      {/* MOBILE DRAWER BACKDROP */}
+      {isMobileMenuOpen && (
+        <div
+          onClick={() => setIsMobileMenuOpen(false)}
+          className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-40 lg:hidden transition-opacity"
+        />
+      )}
+
+      {/* SIDEBAR NAVIGATION (EXPANDABLE & RESPONSIVE WITH MATERIAL LIGHT THEME) */}
+      <aside
+        className={`no-print fixed lg:static inset-y-0 left-0 z-50 bg-white border-r border-slate-200/90 text-slate-800 shrink-0 flex flex-col justify-between shadow-xl lg:shadow-none transition-all duration-300 ease-in-out ${
+          isMobileMenuOpen
+            ? "translate-x-0 w-72"
+            : "-translate-x-full lg:translate-x-0"
+        } ${isSidebarCollapsed ? "lg:w-20" : "lg:w-64"}`}
+      >
+        <div className="flex flex-col h-full overflow-hidden">
+          {/* Brand Logo & Collapse Toggle */}
+          <div className="p-4 border-b border-slate-100 flex items-center justify-between shrink-0">
+            <div className="flex items-center gap-3 overflow-hidden">
+              <div className="p-2.5 rounded-xl bg-emerald-600 text-white font-black shadow-md shadow-emerald-600/20 shrink-0">
+                <Scissors className="w-5 h-5" />
               </div>
-              <div>
-                <h1 className="font-black text-base leading-tight tracking-tight">
-                  ROYAL TAILORS
-                </h1>
-                <span className="text-[11px] text-emerald-400 font-semibold block">
-                  Complete Silai & Khata ERP
-                </span>
-              </div>
+              {(!isSidebarCollapsed || isMobileMenuOpen) && (
+                <div className="overflow-hidden transition-all duration-200">
+                  <h1 className="font-extrabold text-sm tracking-tight text-slate-900 leading-tight">
+                    ROYAL TAILORS
+                  </h1>
+                  <span className="text-[10px] text-emerald-700 font-bold block uppercase tracking-wider">
+                    Silai & Khata ERP
+                  </span>
+                </div>
+              )}
             </div>
+
+            {/* Desktop Expand / Collapse Button */}
+            <button
+              type="button"
+              onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+              className="hidden lg:flex p-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-500 hover:text-slate-800 transition"
+              title={isSidebarCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+            >
+              {isSidebarCollapsed ? (
+                <ChevronRight className="w-4 h-4" />
+              ) : (
+                <ChevronLeft className="w-4 h-4" />
+              )}
+            </button>
+
+            {/* Mobile Close Button */}
+            <button
+              type="button"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="lg:hidden p-1.5 rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50"
+            >
+              <X className="w-4 h-4" />
+            </button>
           </div>
 
-          {/* Primary Action Button */}
-          <div className="p-4">
+          {/* Primary Action Button (New Order / Parchi) */}
+          <div className="p-3 shrink-0">
             <button
               type="button"
               onClick={() => {
                 setPreselectedCustomerForOrder(null);
                 setIsNewOrderOpen(true);
+                setIsMobileMenuOpen(false);
               }}
-              className="w-full py-3 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 transition"
+              className={`w-full py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs flex items-center justify-center gap-2 shadow-sm transition ${
+                isSidebarCollapsed && !isMobileMenuOpen ? "px-0" : ""
+              }`}
+              title="Book New Order / Parchi"
             >
-              <Plus className="w-4 h-4 stroke-[3]" />
-              New Order / Parchi
+              <Plus className="w-4 h-4 stroke-[3] shrink-0" />
+              {(!isSidebarCollapsed || isMobileMenuOpen) && (
+                <span>New Order / Parchi</span>
+              )}
             </button>
           </div>
 
           {/* Menu Items */}
-          <nav className="px-3 space-y-1">
+          <nav className="px-2.5 py-1 space-y-1 overflow-y-auto flex-1">
             {[
               {
                 id: "dashboard",
-                label: "Dashboard & Overview",
+                label: "Dashboard",
                 icon: LayoutDashboard,
               },
               {
                 id: "orders",
-                label: "Orders & Parchi Book",
+                label: "Orders & Parchi",
                 icon: FileText,
                 badge: orders.filter((o) => o.status !== "Delivered").length,
               },
               {
                 id: "customers",
-                label: "Customers & Naap Book",
+                label: "Customers & Naap",
                 icon: Users,
                 badge: customers.length,
               },
               {
                 id: "rates",
-                label: "Silai Rates & Price History",
+                label: "Silai Rates & Price",
                 icon: Tags,
               },
               {
                 id: "ledger",
-                label: "Udhaar & Khata Ledger",
+                label: "Udhaar Ledger",
                 icon: Wallet,
               },
               {
                 id: "reports",
-                label: "Reports, Sales & History",
+                label: "Sales & Reports",
                 icon: BarChart3,
               },
               {
@@ -823,7 +874,7 @@ export default function TailorManagementApp() {
               },
               {
                 id: "settings",
-                label: "Users & Password",
+                label: "Users & Settings",
                 icon: Settings,
               },
             ].map((item) => {
@@ -833,81 +884,118 @@ export default function TailorManagementApp() {
                 <button
                   key={item.id}
                   type="button"
-                  onClick={() => setActiveTab(item.id as ActiveTab)}
-                  className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-bold transition ${
+                  onClick={() => {
+                    setActiveTab(item.id as ActiveTab);
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className={`w-full flex items-center ${
+                    isSidebarCollapsed && !isMobileMenuOpen
+                      ? "justify-center px-2"
+                      : "justify-between px-3"
+                  } py-2.5 rounded-xl text-xs font-bold transition ${
                     isActive
-                      ? "bg-slate-800 text-emerald-400 border-l-4 border-emerald-400"
-                      : "text-slate-300 hover:bg-slate-800/60 hover:text-white"
+                      ? "bg-emerald-50 text-emerald-800 shadow-xs border border-emerald-200/80 font-extrabold"
+                      : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
                   }`}
+                  title={item.label}
                 >
-                  <span className="flex items-center gap-3">
-                    <Icon className="w-4 h-4" />
-                    {item.label}
-                  </span>
-                  {item.badge !== undefined && (
-                    <span
-                      className={`text-xs px-2 py-0.5 rounded-full font-extrabold ${
-                        isActive
-                          ? "bg-emerald-500/20 text-emerald-300"
-                          : "bg-slate-800 text-slate-400"
+                  <span className="flex items-center gap-3 truncate">
+                    <Icon
+                      className={`w-4 h-4 shrink-0 ${
+                        isActive ? "text-emerald-700" : "text-slate-500"
                       }`}
-                    >
-                      {item.badge}
-                    </span>
-                  )}
+                    />
+                    {(!isSidebarCollapsed || isMobileMenuOpen) && (
+                      <span className="truncate">{item.label}</span>
+                    )}
+                  </span>
+                  {(!isSidebarCollapsed || isMobileMenuOpen) &&
+                    item.badge !== undefined && (
+                      <span
+                        className={`text-[11px] px-2 py-0.5 rounded-full font-extrabold shrink-0 ${
+                          isActive
+                            ? "bg-emerald-200/70 text-emerald-900"
+                            : "bg-slate-100 text-slate-600"
+                        }`}
+                      >
+                        {item.badge}
+                      </span>
+                    )}
                 </button>
               );
             })}
           </nav>
-        </div>
 
-        {/* Logged In User Footer */}
-        <div className="p-4 border-t border-slate-800 bg-slate-950/50">
-          <div className="flex items-center justify-between">
-            <div className="truncate pr-2">
-              <p className="text-xs font-bold text-white truncate">
-                {currentUser.full_name}
-              </p>
-              <p className="text-[11px] text-slate-400">
-                @{currentUser.username} • {currentUser.role.toUpperCase()}
-              </p>
+          {/* Logged In User Profile Footer */}
+          <div className="p-3 border-t border-slate-100 bg-slate-50/70 shrink-0">
+            <div className="flex items-center justify-between gap-2">
+              {(!isSidebarCollapsed || isMobileMenuOpen) && (
+                <div className="truncate pr-1">
+                  <p className="text-xs font-extrabold text-slate-900 truncate">
+                    {currentUser.full_name}
+                  </p>
+                  <p className="text-[10px] font-semibold text-slate-500 truncate">
+                    @{currentUser.username} • {currentUser.role.toUpperCase()}
+                  </p>
+                </div>
+              )}
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="p-2 rounded-xl bg-white border border-slate-200 hover:bg-rose-50 hover:text-rose-600 text-slate-500 transition shrink-0"
+                title="Logout"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
             </div>
-            <button
-              type="button"
-              onClick={handleLogout}
-              className="p-2 rounded-lg bg-slate-800 hover:bg-red-600 text-slate-300 hover:text-white transition"
-              title="Logout"
-            >
-              <LogOut className="w-4 h-4" />
-            </button>
           </div>
         </div>
       </aside>
 
       {/* MAIN CONTENT WORKSPACE */}
-      <div className="flex-1 flex flex-col min-w-0">
-        {/* Top Bar with Smart Shop Branch Switcher & Quick Parchi Search */}
-        <header className="no-print bg-white border-b border-slate-200 px-6 py-3.5 flex flex-wrap items-center justify-between gap-4 sticky top-0 z-30">
+      <div className="flex-1 flex flex-col min-w-0 bg-slate-50">
+        {/* Top Bar with Mobile Drawer Trigger, Branch Switcher & Actions */}
+        <header className="no-print bg-white border-b border-slate-200/80 px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3 sticky top-0 z-30 shadow-xs">
           <div className="flex items-center gap-3">
-            <Store className="w-5 h-5 text-emerald-600" />
+            {/* Mobile Hamburger Drawer Button */}
+            <button
+              type="button"
+              onClick={() => setIsMobileMenuOpen(true)}
+              className="lg:hidden p-2 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-100 transition shrink-0"
+              title="Open Navigation Menu"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+
+            {/* Desktop Quick Sidebar Collapse Button in Header */}
+            <button
+              type="button"
+              onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+              className="hidden lg:flex p-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 transition shrink-0"
+              title={isSidebarCollapsed ? "Expand Sidebar" : "Minimize Sidebar"}
+            >
+              <Menu className="w-4 h-4" />
+            </button>
+
+            <Store className="w-4 h-4 text-emerald-600 shrink-0 hidden sm:block" />
             {activeShops.length <= 1 ? (
               <div>
-                <span className="text-[10px] font-bold uppercase text-emerald-600 block leading-none">
-                  Single Active Shop Mode
+                <span className="text-[9px] font-extrabold uppercase text-emerald-700 block leading-tight">
+                  Single Shop Branch
                 </span>
-                <span className="text-sm font-extrabold text-slate-900">
+                <span className="text-xs sm:text-sm font-extrabold text-slate-900">
                   {activeShops[0]?.name || shops[0]?.name || "Main Shop"}
                 </span>
               </div>
             ) : (
               <div>
-                <label className="text-[10px] font-bold uppercase text-slate-400 block leading-none">
-                  Active Shop / Branch Filter
+                <label className="text-[9px] font-extrabold uppercase text-slate-400 block leading-tight">
+                  Branch Filter
                 </label>
                 <select
                   value={selectedShopId}
                   onChange={(e) => setSelectedShopId(e.target.value)}
-                  className="text-sm font-extrabold text-slate-900 bg-transparent outline-none cursor-pointer pr-4"
+                  className="text-xs sm:text-sm font-extrabold text-slate-900 bg-transparent outline-none cursor-pointer pr-3"
                 >
                   <option value="all">
                     All Active Shops ({activeShops.length} Branches)
@@ -922,13 +1010,13 @@ export default function TailorManagementApp() {
             )}
           </div>
 
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3 ml-auto">
             {/* Quick Parchi Search Box */}
             <div className="relative">
-              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
               <input
                 type="text"
-                placeholder="Find Parchi # (e.g. ORD-1001) or Phone..."
+                placeholder="Search Parchi # or Phone..."
                 value={orderSearch}
                 onChange={(e) => {
                   setOrderSearch(e.target.value);
@@ -936,18 +1024,20 @@ export default function TailorManagementApp() {
                     setActiveTab("orders");
                   }
                 }}
-                className="pl-9 pr-4 py-1.5 bg-slate-100 border border-slate-300 rounded-xl text-xs font-semibold w-64 focus:bg-white focus:ring-2 focus:ring-emerald-500 outline-none"
+                className="pl-8 pr-3 py-1.5 bg-slate-100 border border-slate-200/90 rounded-xl text-xs font-semibold w-40 sm:w-56 focus:bg-white focus:ring-2 focus:ring-emerald-500 outline-none transition"
               />
             </div>
 
             <button
               type="button"
               onClick={() => fetchAllData()}
-              className="p-2 rounded-xl border border-slate-200 hover:bg-slate-100 text-slate-600"
+              className="p-1.5 sm:p-2 rounded-xl border border-slate-200 hover:bg-slate-100 text-slate-600 transition"
               title="Refresh Database Data"
             >
               <RefreshCw
-                className={`w-4 h-4 ${dataLoading ? "animate-spin" : ""}`}
+                className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${
+                  dataLoading ? "animate-spin" : ""
+                }`}
               />
             </button>
 
@@ -957,9 +1047,10 @@ export default function TailorManagementApp() {
                 setEditingCustomer(null);
                 setIsCustomerModalOpen(true);
               }}
-              className="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold flex items-center gap-1.5"
+              className="hidden sm:flex px-3 py-1.5 rounded-xl bg-white border border-slate-300 hover:bg-slate-50 text-slate-800 text-xs font-extrabold items-center gap-1.5 shadow-xs transition"
             >
-              <UserPlus className="w-3.5 h-3.5" />+ Add Customer & Naap
+              <UserPlus className="w-3.5 h-3.5 text-emerald-700" />
+              <span>+ Add Customer</span>
             </button>
 
             <button
@@ -968,16 +1059,16 @@ export default function TailorManagementApp() {
                 setPreselectedCustomerForOrder(null);
                 setIsNewOrderOpen(true);
               }}
-              className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold flex items-center gap-1.5 shadow-sm"
+              className="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold flex items-center gap-1.5 shadow-sm transition"
             >
-              <Plus className="w-4 h-4" />
-              Book New Order (Parchi)
+              <Plus className="w-3.5 h-3.5" />
+              <span>Book Order</span>
             </button>
           </div>
         </header>
 
         {/* Page Content Container */}
-        <main className="p-6 space-y-6 flex-1 overflow-y-auto">
+        <main className="p-4 sm:p-6 space-y-6 flex-1 overflow-y-auto">
           {/* ================= TAB 1: DASHBOARD ================= */}
           {activeTab === "dashboard" && (
             <div className="space-y-6">
