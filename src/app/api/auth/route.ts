@@ -71,7 +71,7 @@ export async function GET() {
           user: null,
           subscription_expired: true,
           users: usersRes.rows,
-          message: "Aapki subscription khatam ho chuki hai! Kindly contact Super Admin Anas Hussain (nas.megatech@gmail.com).",
+          message: "Aapki subscription ki muddat khatam ho chuki hai. Mazeed use karne ke liye Owner / Super Admin se rabta karein:\n👤 Admin: Anas Hussain\n✉️ Email: anas.megatech@gmail.com",
         });
       }
     }
@@ -121,9 +121,9 @@ export async function POST(req: NextRequest) {
         if (isStatusInactive || isPastExpiry) {
           return NextResponse.json(
             {
-              error: "Aapki subscription khatam ho chuki hai! Kindly contact to Admin Anas Hussain at nas.megatech@gmail.com",
+              error: "Aapki subscription ki muddat khatam ho chuki hai. Mazeed use karne ke liye Owner / Super Admin se rabta karein:\n👤 Admin: Anas Hussain\n✉️ Email: anas.megatech@gmail.com",
               subscription_expired: true,
-              contact_email: "nas.megatech@gmail.com",
+              contact_email: "anas.megatech@gmail.com",
             },
             { status: 403 }
           );

@@ -691,7 +691,7 @@ export default function TailorManagementApp() {
             {loginError && (
               <div
                 className={`p-4 rounded-2xl text-xs font-semibold border ${
-                  loginError.includes("subscription") || loginError.includes("nas.megatech@gmail.com")
+                  loginError.includes("subscription") || loginError.includes("anas.megatech@gmail.com")
                     ? "bg-rose-50 border-rose-300 text-rose-900 shadow-sm"
                     : "bg-red-50 border-red-200 text-red-700"
                 }`}
@@ -702,15 +702,16 @@ export default function TailorManagementApp() {
                       <ShieldAlert className="w-5 h-5 text-rose-600 shrink-0" />
                       Subscription Expired!
                     </div>
-                    <p className="text-xs text-rose-700 leading-relaxed font-medium">
+                    <p className="text-xs text-rose-800 leading-relaxed font-semibold">
                       Aapki subscription ki muddat khatam ho chuki hai. Mazeed use karne ke liye Owner / Super Admin se rabta karein:
                     </p>
-                    <div className="pt-2 border-t border-rose-200 flex flex-col gap-1 text-[11px] font-bold text-slate-800">
+                    <div className="pt-2 border-t border-rose-200 flex flex-col gap-1 text-[11px] font-bold text-slate-900 bg-white/70 p-2.5 rounded-xl border border-rose-200">
                       <span>👤 Admin: <strong>Anas Hussain</strong></span>
-                      <span className="flex items-center gap-1.5 text-rose-700">
+                      <span className="flex items-center gap-1.5 text-rose-700 font-extrabold">
                         <Mail className="w-3.5 h-3.5" />
-                        <a href="mailto:nas.megatech@gmail.com" className="underline hover:text-rose-900">
-                          nas.megatech@gmail.com
+                        ✉️ Email:{" "}
+                        <a href="mailto:anas.megatech@gmail.com" className="underline hover:text-rose-900">
+                          anas.megatech@gmail.com
                         </a>
                       </span>
                     </div>
