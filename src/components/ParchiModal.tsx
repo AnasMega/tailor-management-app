@@ -36,70 +36,70 @@ export default function ParchiModal({ order, onClose }: ParchiModalProps) {
   const totalDays = getDaysDifference(order.booking_date, order.delivery_date);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/70 backdrop-blur-sm p-4 overflow-y-auto">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl overflow-hidden border border-slate-200 my-8">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/70 backdrop-blur-sm p-2 sm:p-4 overflow-y-auto">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl overflow-hidden border border-slate-200 my-2 sm:my-8 max-h-[96vh] flex flex-col">
         {/* Top Action Toolbar (Hidden when printing) */}
-        <div className="no-print bg-slate-900 text-white px-6 py-4 flex flex-wrap items-center justify-between gap-3">
+        <div className="no-print bg-slate-900 text-white px-4 sm:px-6 py-3 sm:py-4 flex flex-wrap items-center justify-between gap-2.5 shrink-0">
           <div className="flex items-center gap-2">
             <Scissors className="w-5 h-5 text-emerald-400" />
-            <h3 className="font-bold text-lg">
-              Order Parchi / Invoice ({order.order_number})
+            <h3 className="font-bold text-base sm:text-lg">
+              Parchi ({order.order_number})
             </h3>
           </div>
 
-          <div className="flex items-center gap-2 bg-slate-800 p-1 rounded-lg">
+          <div className="flex items-center gap-1.5 bg-slate-800 p-1 rounded-lg overflow-x-auto max-w-full">
             <button
               type="button"
               onClick={() => setPrintMode("invoice")}
-              className={`px-3 py-1.5 rounded-md text-xs font-semibold flex items-center gap-1.5 transition ${
+              className={`px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-md text-[11px] sm:text-xs font-semibold flex items-center gap-1.5 transition shrink-0 ${
                 printMode === "invoice"
                   ? "bg-emerald-600 text-white shadow"
                   : "text-slate-300 hover:text-white"
               }`}
             >
               <FileText className="w-3.5 h-3.5" />
-              Customer Invoice (A4/A5)
+              Invoice
             </button>
             <button
               type="button"
               onClick={() => setPrintMode("thermal")}
-              className={`px-3 py-1.5 rounded-md text-xs font-semibold flex items-center gap-1.5 transition ${
+              className={`px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-md text-[11px] sm:text-xs font-semibold flex items-center gap-1.5 transition shrink-0 ${
                 printMode === "thermal"
                   ? "bg-emerald-600 text-white shadow"
                   : "text-slate-300 hover:text-white"
               }`}
             >
               <Receipt className="w-3.5 h-3.5" />
-              80mm Thermal Parchi
+              Thermal
             </button>
             <button
               type="button"
               onClick={() => setPrintMode("karigar")}
-              className={`px-3 py-1.5 rounded-md text-xs font-semibold flex items-center gap-1.5 transition ${
+              className={`px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-md text-[11px] sm:text-xs font-semibold flex items-center gap-1.5 transition shrink-0 ${
                 printMode === "karigar"
                   ? "bg-emerald-600 text-white shadow"
                   : "text-slate-300 hover:text-white"
               }`}
             >
               <Scissors className="w-3.5 h-3.5" />
-              Karigar Naap Slip
+              Karigar Slip
             </button>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 ml-auto">
             <button
               type="button"
               onClick={() => window.print()}
-              className="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 shadow-lg transition"
+              className="bg-emerald-500 hover:bg-emerald-600 text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-bold flex items-center gap-1.5 shadow-lg transition active:scale-95"
             >
               <Printer className="w-4 h-4" />
-              Print Parchi
+              Print
             </button>
             <button
               type="button"
               onClick={onClose}
-              className="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300"
-              aria-label="Close modal"
+              className="p-1.5 sm:p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition"
+              title="Close Parchi"
             >
               <X className="w-5 h-5" />
             </button>
@@ -107,7 +107,7 @@ export default function ParchiModal({ order, onClose }: ParchiModalProps) {
         </div>
 
         {/* Printable Parchi Content */}
-        <div className="p-6 md:p-8 max-h-[80vh] overflow-y-auto bg-slate-100 flex justify-center">
+        <div className="p-3 sm:p-6 md:p-8 overflow-y-auto bg-slate-100 flex justify-center flex-1">
           <div
             id="printable-parchi-area"
             className={`bg-white border border-slate-300 shadow-sm rounded-xl text-slate-900 ${

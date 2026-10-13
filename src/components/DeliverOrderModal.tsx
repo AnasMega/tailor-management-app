@@ -80,14 +80,14 @@ export default function DeliverOrderModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/70 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden border border-slate-200">
-        <div className="bg-emerald-900 text-white px-6 py-4 flex items-center justify-between">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/70 backdrop-blur-sm p-3 sm:p-4 overflow-y-auto">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden border border-slate-200 my-auto">
+        <div className="bg-emerald-900 text-white px-4 sm:px-6 py-3.5 sm:py-4 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <Truck className="w-5 h-5 text-emerald-300" />
             <div>
-              <h3 className="font-bold text-lg">
-                Deliver Suit & Collect Payment
+              <h3 className="font-bold text-base sm:text-lg">
+                Deliver Suit & Payment
               </h3>
               <p className="text-xs text-emerald-200">
                 Parchi #{order.order_number} • {order.customer_name}
@@ -97,7 +97,7 @@ export default function DeliverOrderModal({
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-lg bg-emerald-800 hover:bg-emerald-700 text-emerald-100"
+            className="p-1.5 rounded-lg bg-emerald-800 hover:bg-emerald-700 text-emerald-100 transition active:scale-95"
           >
             <X className="w-5 h-5" />
           </button>
