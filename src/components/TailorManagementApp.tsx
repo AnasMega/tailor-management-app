@@ -61,6 +61,11 @@ import {
   X,
   Download,
   Database,
+  Crown,
+  ShieldAlert,
+  Check,
+  Ban,
+  Mail,
 } from "lucide-react";
 
 type ActiveTab =
@@ -71,7 +76,8 @@ type ActiveTab =
   | "ledger"
   | "reports"
   | "shops"
-  | "settings";
+  | "settings"
+  | "superadmin";
 
 export default function TailorManagementApp() {
   // Auth state
@@ -619,6 +625,37 @@ export default function TailorManagementApp() {
     }
   };
 
+  const handleUpdateSubscription = async (
+    userId: number,
+    status: string,
+    endDate: string
+  ) => {
+    try {
+      const res = await fetch("/api/auth", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "update_subscription",
+          userId,
+          subscriptionStatus: status,
+          subscriptionEndDate: endDate,
+        }),
+      });
+      if (res.ok) {
+        showToast("User subscription plan updated successfully!");
+        const authRes = await fetch("/api/auth");
+        const authData = await authRes.json();
+        if (authData.users) setAllUsers(authData.users);
+      } else {
+        const d = await res.json();
+        alert(d.error || "Failed to update subscription");
+      }
+    } catch (e) {
+      console.error(e);
+      alert("Network error updating subscription");
+    }
+  };
+
   // Loading Splash
   if (!authChecked) {
     return (
@@ -652,8 +689,35 @@ export default function TailorManagementApp() {
 
           <form onSubmit={handleLogin} className="p-8 space-y-5">
             {loginError && (
-              <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-xl text-xs font-semibold">
-                {loginError}
+              <div
+                className={`p-4 rounded-2xl text-xs font-semibold border ${
+                  loginError.includes("subscription") || loginError.includes("nas.megatech@gmail.com")
+                    ? "bg-rose-50 border-rose-300 text-rose-900 shadow-sm"
+                    : "bg-red-50 border-red-200 text-red-700"
+                }`}
+              >
+                {loginError.includes("subscription") ? (
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 font-black text-rose-800 text-sm">
+                      <ShieldAlert className="w-5 h-5 text-rose-600 shrink-0" />
+                      Subscription Expired!
+                    </div>
+                    <p className="text-xs text-rose-700 leading-relaxed font-medium">
+                      Aapki subscription ki muddat khatam ho chuki hai. Mazeed use karne ke liye Owner / Super Admin se rabta karein:
+                    </p>
+                    <div className="pt-2 border-t border-rose-200 flex flex-col gap-1 text-[11px] font-bold text-slate-800">
+                      <span>👤 Admin: <strong>Anas Hussain</strong></span>
+                      <span className="flex items-center gap-1.5 text-rose-700">
+                        <Mail className="w-3.5 h-3.5" />
+                        <a href="mailto:nas.megatech@gmail.com" className="underline hover:text-rose-900">
+                          nas.megatech@gmail.com
+                        </a>
+                      </span>
+                    </div>
+                  </div>
+                ) : (
+                  loginError
+                )}
               </div>
             )}
 
@@ -937,6 +1001,13 @@ export default function TailorManagementApp() {
                 label: "Users & Settings",
                 icon: Settings,
                 hidden: !!currentUser?.shop_id,
+              },
+              {
+                id: "superadmin",
+                label: "Super Admin Control",
+                icon: Crown,
+                badge: allUsers.length,
+                hidden: currentUser?.role !== "superadmin",
               },
             ]
               .filter((item) => !item.hidden)
@@ -3865,6 +3936,356 @@ export default function TailorManagementApp() {
                       </div>
                     </div>
                   </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* SUPER ADMIN MASTER CONTROL DASHBOARD (OWNER ANAS HUSSAIN) */}
+          {activeTab === "superadmin" && currentUser?.role === "superadmin" && (
+            <div className="space-y-6">
+              {/* Header Banner */}
+              <div className="bg-gradient-to-r from-slate-950 via-slate-900 to-emerald-950 rounded-2xl p-6 text-white border border-slate-800 shadow-xl relative overflow-hidden">
+                <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div>
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-400/30 text-xs font-black mb-2 uppercase tracking-wider">
+                      <Crown className="w-3.5 h-3.5" /> Super Admin & System Owner
+                    </div>
+                    <h2 className="text-2xl font-black tracking-tight">
+                      System Control & Tailor Shops Master Portal
+                    </h2>
+                    <p className="text-xs text-slate-300 mt-1 max-w-xl">
+                      Aap poore system ke Malik / Super Admin hain. Yahan se tamaam tailor shops, unke branches, unke orders aur user subscriptions ko 1-click mein control karein.
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handleDownloadBackup(false)}
+                      disabled={isBackingUp}
+                      className="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs flex items-center gap-2 shadow-md transition"
+                    >
+                      <Database className="w-4 h-4" />
+                      <span>1-Click Master Database Backup</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* System Overall KPI Stats */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+                <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-bold uppercase text-slate-500">
+                      Tailor Companies
+                    </span>
+                    <Store className="w-4 h-4 text-emerald-600" />
+                  </div>
+                  <div className="text-2xl font-black text-slate-900 mt-1">
+                    {shops.length}
+                  </div>
+                  <span className="text-[10px] text-slate-400 font-semibold">
+                    {activeShops.length} Active Branches
+                  </span>
+                </div>
+
+                <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-bold uppercase text-slate-500">
+                      Total Tailor Users
+                    </span>
+                    <Users className="w-4 h-4 text-blue-600" />
+                  </div>
+                  <div className="text-2xl font-black text-slate-900 mt-1">
+                    {allUsers.length}
+                  </div>
+                  <span className="text-[10px] text-emerald-600 font-semibold">
+                    {allUsers.filter((u) => u.subscription_status === "active").length} Active Subscriptions
+                  </span>
+                </div>
+
+                <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-bold uppercase text-slate-500">
+                      Total Orders
+                    </span>
+                    <FileText className="w-4 h-4 text-purple-600" />
+                  </div>
+                  <div className="text-2xl font-black text-slate-900 mt-1">
+                    {orders.length}
+                  </div>
+                  <span className="text-[10px] text-slate-400 font-semibold">
+                    Across all tailor shops
+                  </span>
+                </div>
+
+                <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-bold uppercase text-slate-500">
+                      Total Registered Customers
+                    </span>
+                    <UserPlus className="w-4 h-4 text-amber-600" />
+                  </div>
+                  <div className="text-2xl font-black text-slate-900 mt-1">
+                    {customers.length}
+                  </div>
+                  <span className="text-[10px] text-slate-400 font-semibold">
+                    Customer database
+                  </span>
+                </div>
+              </div>
+
+              {/* Master User & Subscription Management Table */}
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                <div className="p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div>
+                    <h3 className="font-extrabold text-slate-900 text-base flex items-center gap-2">
+                      <KeyRound className="w-5 h-5 text-emerald-600" />
+                      Master User & Subscription Control (Expiry Dates & Duration)
+                    </h3>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      Yahan se har tailor shop ka subscription status (Active / Expired) aur expiry date set karein. Expire hone par user login nahi kar sakega.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse text-xs">
+                    <thead>
+                      <tr className="bg-slate-50/80 text-slate-600 border-b border-slate-200 uppercase font-extrabold text-[10px] tracking-wider">
+                        <th className="py-3 px-4">User & Role</th>
+                        <th className="py-3 px-4">Assigned Company / Shop</th>
+                        <th className="py-3 px-4">Subscription Status</th>
+                        <th className="py-3 px-4">Expiry Date</th>
+                        <th className="py-3 px-4 text-center">Quick Extend Plan</th>
+                        <th className="py-3 px-4 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 font-medium">
+                      {allUsers.map((u) => {
+                        const isExpired =
+                          u.subscription_status === "expired" ||
+                          (u.subscription_end_date &&
+                            new Date(u.subscription_end_date) < new Date());
+                        const isSuper = u.role === "superadmin";
+
+                        return (
+                          <tr key={u.id} className="hover:bg-slate-50/60 transition">
+                            <td className="py-3 px-4">
+                              <div className="flex items-center gap-2">
+                                {isSuper && (
+                                  <Crown className="w-4 h-4 text-amber-500 shrink-0" />
+                                )}
+                                <div>
+                                  <div className="font-extrabold text-slate-900 text-sm">
+                                    {u.full_name}
+                                  </div>
+                                  <div className="font-mono text-emerald-700 text-xs font-bold">
+                                    @{u.username}
+                                  </div>
+                                </div>
+                              </div>
+                            </td>
+
+                            <td className="py-3 px-4">
+                              <div className="font-bold text-slate-800">
+                                {u.shop_name || "All Branches (Master)"}
+                              </div>
+                              {u.shop_id && (
+                                <span className="text-[10px] text-slate-400 font-mono">
+                                  Shop ID #{u.shop_id}
+                                </span>
+                              )}
+                            </td>
+
+                            <td className="py-3 px-4">
+                              {isSuper ? (
+                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black bg-purple-100 text-purple-800 border border-purple-200">
+                                  LIFETIME OWNER
+                                </span>
+                              ) : isExpired ? (
+                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black bg-rose-100 text-rose-800 border border-rose-200">
+                                  <Ban className="w-3 h-3" /> EXPIRED
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-800 border border-emerald-200">
+                                  <Check className="w-3 h-3" /> ACTIVE
+                                </span>
+                              )}
+                            </td>
+
+                            <td className="py-3 px-4">
+                              {isSuper ? (
+                                <span className="text-slate-400 font-bold">Unlimited</span>
+                              ) : (
+                                <input
+                                  type="date"
+                                  defaultValue={
+                                    u.subscription_end_date
+                                      ? String(u.subscription_end_date).slice(0, 10)
+                                      : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+                                          .toISOString()
+                                          .slice(0, 10)
+                                  }
+                                  onBlur={(e) => {
+                                    handleUpdateSubscription(
+                                      u.id,
+                                      u.subscription_status || "active",
+                                      e.target.value
+                                    );
+                                  }}
+                                  className="px-2.5 py-1.5 border border-slate-300 rounded-lg text-xs font-bold text-slate-900 bg-white"
+                                />
+                              )}
+                            </td>
+
+                            <td className="py-3 px-4 text-center">
+                              {!isSuper && (
+                                <div className="inline-flex items-center gap-1">
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      const newDate = new Date();
+                                      newDate.setDate(newDate.getDate() + 7);
+                                      handleUpdateSubscription(
+                                        u.id,
+                                        "active",
+                                        newDate.toISOString().slice(0, 10)
+                                      );
+                                    }}
+                                    className="px-2 py-1 rounded bg-slate-100 hover:bg-emerald-50 hover:text-emerald-700 text-slate-700 text-[10px] font-bold border border-slate-200"
+                                    title="Extend 1 Week (7 Days)"
+                                  >
+                                    +1 Week
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      const newDate = new Date();
+                                      newDate.setDate(newDate.getDate() + 30);
+                                      handleUpdateSubscription(
+                                        u.id,
+                                        "active",
+                                        newDate.toISOString().slice(0, 10)
+                                      );
+                                    }}
+                                    className="px-2 py-1 rounded bg-slate-100 hover:bg-emerald-50 hover:text-emerald-700 text-slate-700 text-[10px] font-bold border border-slate-200"
+                                    title="Extend 1 Month (30 Days)"
+                                  >
+                                    +1 Month
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      const newDate = new Date();
+                                      newDate.setFullYear(newDate.getFullYear() + 1);
+                                      handleUpdateSubscription(
+                                        u.id,
+                                        "active",
+                                        newDate.toISOString().slice(0, 10)
+                                      );
+                                    }}
+                                    className="px-2 py-1 rounded bg-slate-100 hover:bg-emerald-50 hover:text-emerald-700 text-slate-700 text-[10px] font-bold border border-slate-200"
+                                    title="Extend 1 Year (365 Days)"
+                                  >
+                                    +1 Year
+                                  </button>
+                                </div>
+                              )}
+                            </td>
+
+                            <td className="py-3 px-4 text-right">
+                              {!isSuper && (
+                                <div className="inline-flex items-center gap-1.5">
+                                  {isExpired ? (
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        const newDate = new Date();
+                                        newDate.setDate(newDate.getDate() + 30);
+                                        handleUpdateSubscription(
+                                          u.id,
+                                          "active",
+                                          newDate.toISOString().slice(0, 10)
+                                        );
+                                      }}
+                                      className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-extrabold flex items-center gap-1"
+                                    >
+                                      <Check className="w-3 h-3" /> Reactivate (30d)
+                                    </button>
+                                  ) : (
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        const yesterday = new Date();
+                                        yesterday.setDate(yesterday.getDate() - 1);
+                                        handleUpdateSubscription(
+                                          u.id,
+                                          "expired",
+                                          yesterday.toISOString().slice(0, 10)
+                                        );
+                                      }}
+                                      className="px-3 py-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-[11px] font-extrabold flex items-center gap-1"
+                                    >
+                                      <Ban className="w-3 h-3" /> Expire / Block
+                                    </button>
+                                  )}
+                                </div>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* All Tailor Shops & Branches Directory */}
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+                <h3 className="font-extrabold text-slate-900 text-base flex items-center gap-2 mb-2">
+                  <Store className="w-5 h-5 text-emerald-600" />
+                  All Tailor Shop Branches Overview (Live Neon PostgreSQL)
+                </h3>
+                <p className="text-xs text-slate-500 mb-4">
+                  Aap har dukan ke orders aur unke branch details yahan se directly inspect kar sakte hain.
+                </p>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {shops.map((s) => (
+                    <div
+                      key={s.id}
+                      className="p-3.5 rounded-xl border border-slate-200 bg-slate-50/70 hover:bg-white hover:shadow-xs transition"
+                    >
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="font-black text-slate-900 text-sm truncate">
+                          {s.name}
+                        </span>
+                        <span className="px-2 py-0.5 rounded text-[10px] font-black bg-slate-200 text-slate-700">
+                          {s.branch_code}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-500 truncate">
+                        {s.address || "Main Market"}
+                      </p>
+                      <div className="mt-2.5 pt-2 border-t border-slate-200 flex items-center justify-between text-[11px]">
+                        <span className="text-slate-600 font-semibold">
+                          📞 {s.phone || "N/A"}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedShopId(String(s.id));
+                            setActiveTab("orders");
+                          }}
+                          className="text-emerald-700 font-bold hover:underline"
+                        >
+                          View Orders →
+                        </button>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>

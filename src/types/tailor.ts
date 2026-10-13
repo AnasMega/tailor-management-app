@@ -20,6 +20,9 @@ export interface User {
   shop_id: number | null;
   shop_name?: string;
   phone?: string;
+  subscription_status?: string;
+  subscription_start_date?: string;
+  subscription_end_date?: string;
 }
 
 export interface GarmentType {

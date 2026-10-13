@@ -9,7 +9,9 @@ export async function GET() {
     const sessionCookie = cookieStore.get("tailor_session")?.value;
 
     const usersRes = await pool.query(`
-      SELECT u.id, u.username, u.full_name, u.role, u.shop_id, u.phone, u.created_at, s.name as shop_name
+      SELECT u.id, u.username, u.full_name, u.role, u.shop_id, u.phone, u.created_at,
+             u.subscription_status, u.subscription_start_date, u.subscription_end_date,
+             s.name as shop_name, s.branch_code
       FROM users u
       LEFT JOIN shops s ON u.shop_id = s.id
       ORDER BY u.id ASC
@@ -39,7 +41,9 @@ export async function GET() {
     }
 
     const userRes = await pool.query(
-      `SELECT u.id, u.username, u.full_name, u.role, u.shop_id, u.phone, s.name as shop_name
+      `SELECT u.id, u.username, u.full_name, u.role, u.shop_id, u.phone,
+              u.subscription_status, u.subscription_start_date, u.subscription_end_date,
+              s.name as shop_name, s.branch_code
        FROM users u
        LEFT JOIN shops s ON u.shop_id = s.id
        WHERE u.id = $1`,
@@ -54,9 +58,27 @@ export async function GET() {
       });
     }
 
+    const user = userRes.rows[0];
+
+    // Check subscription expiry for non-superadmin
+    if (user.role !== "superadmin") {
+      const isStatusInactive = user.subscription_status === "inactive" || user.subscription_status === "expired";
+      const isPastExpiry = user.subscription_end_date && new Date(user.subscription_end_date) < new Date();
+      if (isStatusInactive || isPastExpiry) {
+        cookieStore.delete("tailor_session");
+        return NextResponse.json({
+          authenticated: false,
+          user: null,
+          subscription_expired: true,
+          users: usersRes.rows,
+          message: "Aapki subscription khatam ho chuki hai! Kindly contact Super Admin Anas Hussain (nas.megatech@gmail.com).",
+        });
+      }
+    }
+
     return NextResponse.json({
       authenticated: true,
-      user: userRes.rows[0],
+      user,
       users: usersRes.rows,
     });
   } catch (error: unknown) {
@@ -74,7 +96,9 @@ export async function POST(req: NextRequest) {
     if (action === "login") {
       const { username, password } = body;
       const res = await pool.query(
-        `SELECT u.id, u.username, u.full_name, u.role, u.shop_id, u.phone, s.name as shop_name
+        `SELECT u.id, u.username, u.full_name, u.role, u.shop_id, u.phone,
+                u.subscription_status, u.subscription_start_date, u.subscription_end_date,
+                s.name as shop_name, s.branch_code
          FROM users u
          LEFT JOIN shops s ON u.shop_id = s.id
          WHERE LOWER(u.username) = LOWER($1) AND u.password = $2`,
@@ -89,6 +113,23 @@ export async function POST(req: NextRequest) {
       }
 
       const user = res.rows[0];
+
+      // Check subscription expiry for non-superadmin
+      if (user.role !== "superadmin") {
+        const isStatusInactive = user.subscription_status === "inactive" || user.subscription_status === "expired";
+        const isPastExpiry = user.subscription_end_date && new Date(user.subscription_end_date) < new Date();
+        if (isStatusInactive || isPastExpiry) {
+          return NextResponse.json(
+            {
+              error: "Aapki subscription khatam ho chuki hai! Kindly contact to Admin Anas Hussain at nas.megatech@gmail.com",
+              subscription_expired: true,
+              contact_email: "nas.megatech@gmail.com",
+            },
+            { status: 403 }
+          );
+        }
+      }
+
       const token = Buffer.from(JSON.stringify({ id: user.id, username: user.username })).toString("base64");
 
       const cookieStore = await cookies();
@@ -105,6 +146,29 @@ export async function POST(req: NextRequest) {
       const cookieStore = await cookies();
       cookieStore.delete("tailor_session");
       return NextResponse.json({ success: true });
+    }
+
+    if (action === "update_subscription") {
+      const { userId, subscriptionStatus, subscriptionStartDate, subscriptionEndDate } = body;
+      if (!userId) {
+        return NextResponse.json({ error: "User ID is required" }, { status: 400 });
+      }
+
+      const updateRes = await pool.query(
+        `UPDATE users
+         SET subscription_status = COALESCE($1, subscription_status),
+             subscription_start_date = COALESCE($2, subscription_start_date),
+             subscription_end_date = COALESCE($3, subscription_end_date)
+         WHERE id = $4
+         RETURNING id, username, full_name, role, shop_id, subscription_status, subscription_start_date, subscription_end_date`,
+        [subscriptionStatus, subscriptionStartDate, subscriptionEndDate, userId]
+      );
+
+      return NextResponse.json({
+        success: true,
+        user: updateRes.rows[0],
+        message: "User subscription updated successfully!",
+      });
     }
 
     if (action === "change_password") {
@@ -125,7 +189,7 @@ export async function POST(req: NextRequest) {
              shop_id = COALESCE($5, shop_id),
              role = COALESCE($6, role)
          WHERE id = $7
-         RETURNING id, username, full_name, role, shop_id, phone`,
+         RETURNING id, username, full_name, role, shop_id, phone, subscription_status, subscription_start_date, subscription_end_date`,
         [newUsername.trim(), newPassword, fullName, phone, shopId || null, role || "admin", userId]
       );
 
@@ -137,7 +201,7 @@ export async function POST(req: NextRequest) {
     }
 
     if (action === "create_user") {
-      const { username, password, fullName, role, shopId, phone } = body;
+      const { username, password, fullName, role, shopId, phone, subscriptionStatus, subscriptionStartDate, subscriptionEndDate } = body;
       if (!username || !password || !fullName) {
         return NextResponse.json(
           { error: "Username, Password, and Full Name are required." },
@@ -146,10 +210,20 @@ export async function POST(req: NextRequest) {
       }
 
       const insertRes = await pool.query(
-        `INSERT INTO users (username, password, full_name, role, shop_id, phone)
-         VALUES ($1, $2, $3, $4, $5, $6)
-         RETURNING id, username, full_name, role, shop_id, phone`,
-        [username.trim(), password, fullName.trim(), role || "manager", shopId || null, phone || ""]
+        `INSERT INTO users (username, password, full_name, role, shop_id, phone, subscription_status, subscription_start_date, subscription_end_date)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+         RETURNING id, username, full_name, role, shop_id, phone, subscription_status, subscription_start_date, subscription_end_date`,
+        [
+          username.trim(),
+          password,
+          fullName.trim(),
+          role || "admin",
+          shopId || null,
+          phone || "",
+          subscriptionStatus || "active",
+          subscriptionStartDate || new Date().toISOString().slice(0, 10),
+          subscriptionEndDate || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
+        ]
       );
 
       return NextResponse.json({

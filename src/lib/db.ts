@@ -55,8 +55,18 @@ export async function ensureDbInitialized() {
         role VARCHAR(50) DEFAULT 'admin',
         shop_id INTEGER REFERENCES shops(id) ON DELETE SET NULL,
         phone VARCHAR(50),
+        subscription_status VARCHAR(50) DEFAULT 'active',
+        subscription_start_date DATE DEFAULT CURRENT_DATE,
+        subscription_end_date DATE DEFAULT (CURRENT_DATE + INTERVAL '30 days'),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
+    `);
+
+    await client.query(`
+      ALTER TABLE users
+      ADD COLUMN IF NOT EXISTS subscription_status VARCHAR(50) DEFAULT 'active',
+      ADD COLUMN IF NOT EXISTS subscription_start_date DATE DEFAULT CURRENT_DATE,
+      ADD COLUMN IF NOT EXISTS subscription_end_date DATE DEFAULT (CURRENT_DATE + INTERVAL '30 days');
     `);
 
     // 3. Garment Types & Stitching Rate Card Table
