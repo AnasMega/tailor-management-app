@@ -12,6 +12,21 @@ export interface Shop {
   total_customers?: number;
 }
 
+export interface PricingPlan {
+  id: number;
+  plan_name: string;
+  price_monthly: number;
+  storage_limit_mb: number;
+  customizations_per_month: number;
+  free_installation: boolean;
+  continuity_guarantee: boolean;
+  features: string[];
+  is_popular?: boolean;
+  badge_text?: string;
+  is_active?: boolean;
+  subscriber_count?: number;
+}
+
 export interface User {
   id: number;
   username: string;
@@ -24,6 +39,10 @@ export interface User {
   subscription_status?: string;
   subscription_start_date?: string;
   subscription_end_date?: string;
+  plan_id?: number | null;
+  plan_name?: string;
+  storage_limit_mb?: number;
+  storage_used_mb?: number;
 }
 
 export interface GarmentType {

@@ -58,6 +58,10 @@ export async function ensureDbInitialized() {
         subscription_status VARCHAR(50) DEFAULT 'active',
         subscription_start_date DATE DEFAULT CURRENT_DATE,
         subscription_end_date DATE DEFAULT (CURRENT_DATE + INTERVAL '30 days'),
+        plan_id INTEGER,
+        plan_name VARCHAR(150) DEFAULT 'Basic Starter Plan',
+        storage_limit_mb INTEGER DEFAULT 500,
+        storage_used_mb NUMERIC(10, 2) DEFAULT 4.5,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
@@ -66,7 +70,29 @@ export async function ensureDbInitialized() {
       ALTER TABLE users
       ADD COLUMN IF NOT EXISTS subscription_status VARCHAR(50) DEFAULT 'active',
       ADD COLUMN IF NOT EXISTS subscription_start_date DATE DEFAULT CURRENT_DATE,
-      ADD COLUMN IF NOT EXISTS subscription_end_date DATE DEFAULT (CURRENT_DATE + INTERVAL '30 days');
+      ADD COLUMN IF NOT EXISTS subscription_end_date DATE DEFAULT (CURRENT_DATE + INTERVAL '30 days'),
+      ADD COLUMN IF NOT EXISTS plan_id INTEGER,
+      ADD COLUMN IF NOT EXISTS plan_name VARCHAR(150) DEFAULT 'Basic Starter Plan',
+      ADD COLUMN IF NOT EXISTS storage_limit_mb INTEGER DEFAULT 500,
+      ADD COLUMN IF NOT EXISTS storage_used_mb NUMERIC(10, 2) DEFAULT 4.5;
+    `);
+
+    // 2B. Pricing & Subscription Plans Table
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS pricing_plans (
+        id SERIAL PRIMARY KEY,
+        plan_name VARCHAR(150) NOT NULL,
+        price_monthly NUMERIC(10, 2) NOT NULL,
+        storage_limit_mb INTEGER NOT NULL DEFAULT 500,
+        customizations_per_month INTEGER NOT NULL DEFAULT 0,
+        free_installation BOOLEAN DEFAULT TRUE,
+        continuity_guarantee BOOLEAN DEFAULT TRUE,
+        features JSONB NOT NULL DEFAULT '[]'::jsonb,
+        is_popular BOOLEAN DEFAULT FALSE,
+        badge_text VARCHAR(100) DEFAULT '',
+        is_active BOOLEAN DEFAULT TRUE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
     `);
 
     // 3. Garment Types & Stitching Rate Card Table

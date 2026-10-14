@@ -15,6 +15,7 @@ import {
   Order,
   LedgerEntry,
   MEASUREMENT_LABELS,
+  PricingPlan,
 } from "@/types/tailor";
 import ParchiModal from "@/components/ParchiModal";
 import DeliverOrderModal from "@/components/DeliverOrderModal";
@@ -68,6 +69,12 @@ import {
   Mail,
   Eye,
   EyeOff,
+  Server,
+  HardDrive,
+  ShieldCheck,
+  BadgePercent,
+  Layers,
+  Zap,
 } from "lucide-react";
 
 type ActiveTab =
@@ -202,6 +209,24 @@ export default function TailorManagementApp() {
     admin_username: "",
     admin_password: "",
     admin_fullname: "",
+    plan_id: "1",
+  });
+
+  // Pricing Plans State
+  const [pricingPlans, setPricingPlans] = useState<PricingPlan[]>([]);
+  const [editingPlan, setEditingPlan] = useState<PricingPlan | null>(null);
+  const [isPlanModalOpen, setIsPlanModalOpen] = useState(false);
+  const [planForm, setPlanForm] = useState({
+    id: 0,
+    plan_name: "",
+    price_monthly: 500,
+    storage_limit_mb: 500,
+    customizations_per_month: 0,
+    free_installation: true,
+    continuity_guarantee: true,
+    badge_text: "",
+    is_popular: false,
+    featuresText: "",
   });
 
   // Backup State
@@ -262,7 +287,7 @@ export default function TailorManagementApp() {
     async (shopFilter = selectedShopId) => {
       setDataLoading(true);
       try {
-        const [shopsRes, garmentsRes, custRes, ordRes, ledRes, repRes] =
+        const [shopsRes, garmentsRes, custRes, ordRes, ledRes, repRes, plansRes] =
           await Promise.all([
             fetch("/api/shops"),
             fetch("/api/garments"),
@@ -270,9 +295,10 @@ export default function TailorManagementApp() {
             fetch(`/api/orders?shopId=${shopFilter}`),
             fetch(`/api/ledger?shopId=${shopFilter}`),
             fetch(`/api/reports?shopId=${shopFilter}`),
+            fetch("/api/plans"),
           ]);
 
-        const [shopsData, garmentsData, custData, ordData, ledData, repData] =
+        const [shopsData, garmentsData, custData, ordData, ledData, repData, plansData] =
           await Promise.all([
             shopsRes.json(),
             garmentsRes.json(),
@@ -280,7 +306,10 @@ export default function TailorManagementApp() {
             ordRes.json(),
             ledRes.json(),
             repRes.json(),
+            plansRes.json(),
           ]);
+
+        if (plansData.plans) setPricingPlans(plansData.plans);
 
         if (shopsData.shops) {
           setShops(shopsData.shops);
@@ -653,7 +682,10 @@ export default function TailorManagementApp() {
   const handleUpdateSubscription = async (
     userId: number,
     status: string,
-    endDate: string
+    endDate: string,
+    planId?: number,
+    planName?: string,
+    storageLimitMb?: number
   ) => {
     try {
       const res = await fetch("/api/auth", {
@@ -664,6 +696,9 @@ export default function TailorManagementApp() {
           userId,
           subscriptionStatus: status,
           subscriptionEndDate: endDate,
+          planId,
+          planName,
+          storageLimitMb,
         }),
       });
       if (res.ok) {
@@ -678,6 +713,73 @@ export default function TailorManagementApp() {
     } catch (e) {
       console.error(e);
       alert("Network error updating subscription");
+    }
+  };
+
+  const handleSavePricingPlan = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const featuresArray = planForm.featuresText
+        .split("\n")
+        .map((f) => f.trim())
+        .filter(Boolean);
+
+      const res = await fetch("/api/plans", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: planForm.id ? "edit" : "create",
+          planId: planForm.id || undefined,
+          planName: planForm.plan_name,
+          priceMonthly: Number(planForm.price_monthly),
+          storageLimitMb: Number(planForm.storage_limit_mb),
+          customizationsPerMonth: Number(planForm.customizations_per_month),
+          freeInstallation: planForm.free_installation,
+          continuityGuarantee: planForm.continuity_guarantee,
+          badgeText: planForm.badge_text || null,
+          isPopular: planForm.is_popular,
+          features: featuresArray,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to save pricing plan");
+      }
+
+      showToast(`Plan "${planForm.plan_name}" saved successfully!`);
+      setIsPlanModalOpen(false);
+      setEditingPlan(null);
+      // Refresh plans
+      const plansRes = await fetch("/api/plans");
+      const plansData = await plansRes.json();
+      if (plansData.plans) setPricingPlans(plansData.plans);
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : "Error saving plan");
+    }
+  };
+
+  const handleDeletePlan = async (planId: number, planName: string) => {
+    if (!confirm(`Are you sure you want to delete the plan "${planName}"?`)) return;
+    try {
+      const res = await fetch("/api/plans", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "delete",
+          planId,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to delete plan");
+      }
+      showToast(`Plan "${planName}" deleted.`);
+      const plansRes = await fetch("/api/plans");
+      const plansData = await plansRes.json();
+      if (plansData.plans) setPricingPlans(plansData.plans);
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : "Error deleting plan");
     }
   };
 
@@ -738,6 +840,10 @@ export default function TailorManagementApp() {
 
       // 2. Create company admin user if username provided
       if (newCompanyForm.admin_username && newCompanyForm.admin_password) {
+        const selectedPlan = pricingPlans.find(
+          (p) => p.id === Number(newCompanyForm.plan_id || 1)
+        );
+
         const userRes = await fetch("/api/auth", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -750,6 +856,9 @@ export default function TailorManagementApp() {
             shopId: createdShopId,
             phone: newCompanyForm.phone,
             subscriptionStatus: "active",
+            planId: selectedPlan?.id || 1,
+            planName: selectedPlan?.plan_name || "Starter Plan",
+            storageLimitMb: selectedPlan?.storage_limit_mb || 500,
           }),
         });
         const userData = await userRes.json();
@@ -769,6 +878,7 @@ export default function TailorManagementApp() {
         admin_username: "",
         admin_password: "",
         admin_fullname: "",
+        plan_id: "1",
       });
 
       // Refresh shops & users
@@ -1297,6 +1407,38 @@ export default function TailorManagementApp() {
                   className="pl-8 pr-3 py-1.5 bg-slate-100 border border-slate-200/90 rounded-xl text-xs font-semibold w-44 lg:w-56 focus:bg-white focus:ring-2 focus:ring-emerald-500 outline-none transition"
                 />
               </div>
+
+              {/* LIVE DB STORAGE & PLAN USAGE BADGE (TOP CORNER) */}
+              {currentUser && (
+                <div className="hidden xl:flex items-center gap-2 px-2.5 py-1 rounded-xl bg-slate-100/90 border border-slate-200/90 text-xs">
+                  <div className="flex items-center gap-1.5 text-emerald-800 font-black">
+                    <Zap className="w-3.5 h-3.5 text-amber-500 fill-amber-400 shrink-0" />
+                    <span className="truncate max-w-[130px]">
+                      {currentUser.plan_name || (currentUser.role === "superadmin" ? "SuperAdmin Plan" : "Starter (500 MB)")}
+                    </span>
+                  </div>
+                  <div className="h-3 w-px bg-slate-300" />
+                  <div className="flex items-center gap-1 text-[11px] font-bold text-slate-700">
+                    <Database className="w-3 h-3 text-slate-500 shrink-0" />
+                    <span>
+                      {Number(currentUser.storage_used_mb || 4.5).toFixed(1)} MB /{" "}
+                      {currentUser.role === "superadmin"
+                        ? "Unlimited"
+                        : `${currentUser.storage_limit_mb || 500} MB`}
+                    </span>
+                    {currentUser.role !== "superadmin" && (
+                      <span className="text-[10px] text-emerald-700 font-extrabold bg-emerald-100/80 px-1 py-0.2 rounded">
+                        {(
+                          ((Number(currentUser.storage_used_mb || 4.5)) /
+                            (currentUser.storage_limit_mb || 500)) *
+                          100
+                        ).toFixed(1)}
+                        %
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
 
               {/* 1-Click Backup Button */}
               <button
@@ -4162,6 +4304,175 @@ export default function TailorManagementApp() {
                 </div>
               </div>
 
+              {/* PRICING & SERVICES PLANS MANAGER (6 SUBSCRIPTION PLANS) */}
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div>
+                    <h3 className="font-extrabold text-slate-900 text-base flex items-center gap-2">
+                      <Layers className="w-5 h-5 text-emerald-600" />
+                      Subscription Pricing & Services Management (6 Plans)
+                    </h3>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      Tailor shops ke monthly subscription packages aur database storage limits yahan se set aur customize karein.
+                    </p>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditingPlan(null);
+                      setPlanForm({
+                        id: 0,
+                        plan_name: "",
+                        price_monthly: 500,
+                        storage_limit_mb: 500,
+                        customizations_per_month: 0,
+                        free_installation: true,
+                        continuity_guarantee: true,
+                        badge_text: "",
+                        is_popular: false,
+                        featuresText: "Free Installation & Setup\nSmooth Continuity Guarantee\nDedicated Single Company & User Account\nLive Real-time Database Storage Meter",
+                      });
+                      setIsPlanModalOpen(true);
+                    }}
+                    className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black flex items-center gap-1.5 shadow-sm self-start sm:self-auto"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>+ Create New Custom Plan</span>
+                  </button>
+                </div>
+
+                {/* Plans Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {pricingPlans.map((plan) => (
+                    <div
+                      key={plan.id}
+                      className={`relative rounded-2xl border p-4.5 flex flex-col justify-between transition-all ${
+                        plan.is_popular
+                          ? "border-emerald-500 bg-emerald-50/20 shadow-md ring-2 ring-emerald-500/20"
+                          : "border-slate-200 bg-white hover:border-slate-300 hover:shadow-xs"
+                      }`}
+                    >
+                      {/* Popular / Custom Badge */}
+                      {plan.badge_text && (
+                        <div className="absolute -top-2.5 right-4 bg-emerald-600 text-white text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full shadow-xs">
+                          {plan.badge_text}
+                        </div>
+                      )}
+
+                      <div>
+                        <div className="flex items-start justify-between gap-2 mb-2">
+                          <div>
+                            <h4 className="font-extrabold text-slate-900 text-sm">
+                              {plan.plan_name}
+                            </h4>
+                            <span className="text-[10px] text-slate-400 font-bold uppercase">
+                              1 Dedicated Company & Account
+                            </span>
+                          </div>
+                          <span className="text-[11px] font-black text-emerald-700 bg-emerald-100/70 px-2 py-0.5 rounded-lg shrink-0">
+                            {plan.subscriber_count || 0} Shops Active
+                          </span>
+                        </div>
+
+                        {/* Price Display */}
+                        <div className="my-2.5 flex items-baseline gap-1">
+                          <span className="text-2xl font-black text-slate-900">
+                            Rs. {plan.price_monthly.toLocaleString()}
+                          </span>
+                          <span className="text-xs text-slate-500 font-bold">
+                            / month
+                          </span>
+                        </div>
+
+                        {/* Key Specs Pills */}
+                        <div className="grid grid-cols-2 gap-2 my-3 text-xs">
+                          <div className="p-2 rounded-xl bg-slate-50 border border-slate-100">
+                            <div className="text-[10px] font-bold uppercase text-slate-400 flex items-center gap-1">
+                              <HardDrive className="w-3 h-3 text-emerald-600" />
+                              DB Storage
+                            </div>
+                            <div className="font-black text-slate-800 text-xs mt-0.5">
+                              {plan.storage_limit_mb >= 1000
+                                ? `${(plan.storage_limit_mb / 1000).toFixed(1)} GB`
+                                : `${plan.storage_limit_mb} MB`}
+                            </div>
+                          </div>
+
+                          <div className="p-2 rounded-xl bg-slate-50 border border-slate-100">
+                            <div className="text-[10px] font-bold uppercase text-slate-400 flex items-center gap-1">
+                              <Zap className="w-3 h-3 text-amber-500" />
+                              Customization
+                            </div>
+                            <div className="font-black text-slate-800 text-xs mt-0.5">
+                              {plan.customizations_per_month > 0
+                                ? `${plan.customizations_per_month} / month`
+                                : "Standard"}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Features Checklist */}
+                        <ul className="space-y-1.5 text-xs text-slate-600 border-t border-slate-100 pt-2.5 mb-4">
+                          {plan.free_installation && (
+                            <li className="flex items-center gap-2">
+                              <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0 stroke-[3]" />
+                              <span>Free Installation & Setup</span>
+                            </li>
+                          )}
+                          {plan.continuity_guarantee && (
+                            <li className="flex items-center gap-2">
+                              <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0 stroke-[3]" />
+                              <span>Smooth Continuity Guarantee</span>
+                            </li>
+                          )}
+                          {plan.features?.map((f, i) => (
+                            <li key={i} className="flex items-center gap-2">
+                              <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0 stroke-[3]" />
+                              <span>{f}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+
+                      {/* Action Buttons */}
+                      <div className="pt-2 border-t border-slate-100 flex items-center justify-end gap-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditingPlan(plan);
+                            setPlanForm({
+                              id: plan.id,
+                              plan_name: plan.plan_name,
+                              price_monthly: plan.price_monthly,
+                              storage_limit_mb: plan.storage_limit_mb,
+                              customizations_per_month: plan.customizations_per_month,
+                              free_installation: plan.free_installation,
+                              continuity_guarantee: plan.continuity_guarantee,
+                              badge_text: plan.badge_text || "",
+                              is_popular: Boolean(plan.is_popular),
+                              featuresText: (plan.features || []).join("\n"),
+                            });
+                            setIsPlanModalOpen(true);
+                          }}
+                          className="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold flex items-center gap-1"
+                        >
+                          <Edit3 className="w-3 h-3 text-emerald-600" /> Edit Plan
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDeletePlan(plan.id, plan.plan_name)}
+                          className="p-1.5 rounded-lg hover:bg-rose-50 text-slate-400 hover:text-rose-600"
+                          title="Delete Plan"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
               {/* Master User & Subscription Management Table */}
               <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
                 <div className="p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -4212,6 +4523,7 @@ export default function TailorManagementApp() {
                         <th className="py-3 px-4">User & Role</th>
                         <th className="py-3 px-4">Login Password</th>
                         <th className="py-3 px-4">Assigned Company / Branch</th>
+                        <th className="py-3 px-4">Assigned Plan & DB Limit</th>
                         <th className="py-3 px-4">Subscription Status</th>
                         <th className="py-3 px-4">Expiry Date</th>
                         <th className="py-3 px-4 text-center">Quick Extend Plan</th>
@@ -4280,6 +4592,52 @@ export default function TailorManagementApp() {
                                 <span className="text-[10px] text-slate-400 font-mono">
                                   Shop ID #{u.shop_id}
                                 </span>
+                              )}
+                            </td>
+
+                            <td className="py-3 px-4">
+                              {isSuper ? (
+                                <span className="text-[11px] font-black text-purple-700 bg-purple-50 px-2 py-0.5 rounded border border-purple-200">
+                                  Owner Unlimited (10 GB)
+                                </span>
+                              ) : (
+                                <div className="space-y-1">
+                                  <select
+                                    value={u.plan_id || 1}
+                                    onChange={(e) => {
+                                      const selectedP = pricingPlans.find(
+                                        (p) => p.id === Number(e.target.value)
+                                      );
+                                      if (selectedP) {
+                                        handleUpdateSubscription(
+                                          u.id,
+                                          u.subscription_status || "active",
+                                          u.subscription_end_date
+                                            ? String(u.subscription_end_date).slice(0, 10)
+                                            : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+                                                .toISOString()
+                                                .slice(0, 10),
+                                          selectedP.id,
+                                          selectedP.plan_name,
+                                          selectedP.storage_limit_mb
+                                        );
+                                      }
+                                    }}
+                                    className="px-2 py-1 border border-slate-300 rounded-lg text-xs font-bold text-slate-900 bg-white max-w-[170px]"
+                                  >
+                                    {pricingPlans.map((p) => (
+                                      <option key={p.id} value={p.id}>
+                                        {p.plan_name} (Rs. {p.price_monthly})
+                                      </option>
+                                    ))}
+                                  </select>
+                                  <div className="text-[10px] text-slate-500 font-bold flex items-center gap-1">
+                                    <HardDrive className="w-3 h-3 text-emerald-600" />
+                                    <span>
+                                      Limit: {u.storage_limit_mb || 500} MB | Used: {Number(u.storage_used_mb || 4.5).toFixed(1)} MB
+                                    </span>
+                                  </div>
+                                </div>
                               )}
                             </td>
 
@@ -4711,7 +5069,7 @@ export default function TailorManagementApp() {
                     <span className="text-[11px] font-black uppercase text-emerald-700 block mb-2">
                       Company Admin Account (Isolated Login)
                     </span>
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-2 gap-3 mb-3">
                       <div>
                         <label className="block text-[11px] font-bold uppercase text-slate-600 mb-1">
                           Admin Username *
@@ -4749,6 +5107,28 @@ export default function TailorManagementApp() {
                         />
                       </div>
                     </div>
+
+                    <div>
+                      <label className="block text-[11px] font-bold uppercase text-slate-600 mb-1">
+                        Select Subscription Plan
+                      </label>
+                      <select
+                        value={newCompanyForm.plan_id || "1"}
+                        onChange={(e) =>
+                          setNewCompanyForm({
+                            ...newCompanyForm,
+                            plan_id: e.target.value,
+                          })
+                        }
+                        className="w-full px-3 py-2 border border-slate-300 rounded-xl text-xs font-bold text-slate-800 bg-white"
+                      >
+                        {pricingPlans.map((p) => (
+                          <option key={p.id} value={String(p.id)}>
+                            {p.plan_name} — Rs. {p.price_monthly.toLocaleString()}/mo ({p.storage_limit_mb} MB DB storage)
+                          </option>
+                        ))}
+                      </select>
+                    </div>
                   </div>
 
                   <div className="pt-3 flex items-center justify-end gap-2 border-t border-slate-100">
@@ -4765,6 +5145,221 @@ export default function TailorManagementApp() {
                     >
                       <Plus className="w-4 h-4 stroke-[3]" />
                       <span>Create Company & Admin Account</span>
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* MODAL 3: CREATE / EDIT PRICING & SERVICES PLAN */}
+          {isPlanModalOpen && (
+            <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-4">
+              <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-lg w-full overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                <div className="px-6 py-4 bg-slate-900 text-white flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Layers className="w-5 h-5 text-emerald-400" />
+                    <h3 className="font-black text-sm">
+                      {planForm.id ? "Edit Subscription Plan" : "Create New Subscription Plan"}
+                    </h3>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setIsPlanModalOpen(false)}
+                    className="p-1 hover:bg-slate-800 rounded-lg text-slate-400 hover:text-white"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+
+                <form onSubmit={handleSavePricingPlan} className="p-6 space-y-4 max-h-[85vh] overflow-y-auto">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-bold uppercase text-slate-700 mb-1">
+                        Plan Name *
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="e.g. Starter Bronze Plan"
+                        value={planForm.plan_name}
+                        onChange={(e) =>
+                          setPlanForm({ ...planForm, plan_name: e.target.value })
+                        }
+                        className="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm font-semibold"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold uppercase text-slate-700 mb-1">
+                        Monthly Price (Rs.) *
+                      </label>
+                      <input
+                        type="number"
+                        required
+                        min="0"
+                        step="50"
+                        placeholder="500"
+                        value={planForm.price_monthly}
+                        onChange={(e) =>
+                          setPlanForm({
+                            ...planForm,
+                            price_monthly: Number(e.target.value),
+                          })
+                        }
+                        className="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm font-bold"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-bold uppercase text-slate-700 mb-1">
+                        Database Storage Limit (MB) *
+                      </label>
+                      <input
+                        type="number"
+                        required
+                        min="100"
+                        step="100"
+                        placeholder="500"
+                        value={planForm.storage_limit_mb}
+                        onChange={(e) =>
+                          setPlanForm({
+                            ...planForm,
+                            storage_limit_mb: Number(e.target.value),
+                          })
+                        }
+                        className="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm font-bold"
+                      />
+                      <span className="text-[10px] text-slate-400">
+                        {planForm.storage_limit_mb >= 1000
+                          ? `≈ ${(planForm.storage_limit_mb / 1000).toFixed(1)} GB Storage`
+                          : `${planForm.storage_limit_mb} MB Storage`}
+                      </span>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold uppercase text-slate-700 mb-1">
+                        Monthly Customizations
+                      </label>
+                      <input
+                        type="number"
+                        min="0"
+                        placeholder="0"
+                        value={planForm.customizations_per_month}
+                        onChange={(e) =>
+                          setPlanForm({
+                            ...planForm,
+                            customizations_per_month: Number(e.target.value),
+                          })
+                        }
+                        className="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm font-semibold"
+                      />
+                      <span className="text-[10px] text-slate-400">
+                        Changes/tweaks allowed per month
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-bold uppercase text-slate-700 mb-1">
+                        Badge Label (Optional)
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. POPULAR, BEST VALUE"
+                        value={planForm.badge_text}
+                        onChange={(e) =>
+                          setPlanForm({ ...planForm, badge_text: e.target.value })
+                        }
+                        className="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm"
+                      />
+                    </div>
+                    <div className="flex items-center gap-2 pt-6">
+                      <input
+                        type="checkbox"
+                        id="is_popular"
+                        checked={planForm.is_popular}
+                        onChange={(e) =>
+                          setPlanForm({ ...planForm, is_popular: e.target.checked })
+                        }
+                        className="w-4 h-4 text-emerald-600 rounded"
+                      />
+                      <label
+                        htmlFor="is_popular"
+                        className="text-xs font-extrabold text-slate-800 cursor-pointer"
+                      >
+                        Highlight as Most Popular
+                      </label>
+                    </div>
+                  </div>
+
+                  {/* Guaranteed Services */}
+                  <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+                    <span className="text-[11px] font-black uppercase text-slate-600 block">
+                      Standard Inclusions
+                    </span>
+                    <label className="flex items-center gap-2 text-xs font-bold text-slate-700 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={planForm.free_installation}
+                        onChange={(e) =>
+                          setPlanForm({
+                            ...planForm,
+                            free_installation: e.target.checked,
+                          })
+                        }
+                        className="w-4 h-4 text-emerald-600 rounded"
+                      />
+                      <span>Free Installation & Initial Setup</span>
+                    </label>
+                    <label className="flex items-center gap-2 text-xs font-bold text-slate-700 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={planForm.continuity_guarantee}
+                        onChange={(e) =>
+                          setPlanForm({
+                            ...planForm,
+                            continuity_guarantee: e.target.checked,
+                          })
+                        }
+                        className="w-4 h-4 text-emerald-600 rounded"
+                      />
+                      <span>Smooth Continuity & 99.9% Uptime Guarantee</span>
+                    </label>
+                  </div>
+
+                  {/* Custom Features List */}
+                  <div>
+                    <label className="block text-xs font-bold uppercase text-slate-700 mb-1">
+                      Features List (One feature per line)
+                    </label>
+                    <textarea
+                      rows={4}
+                      placeholder="Free Database Backup&#10;Dedicated Company Isolated DB&#10;WhatsApp Receipt Support"
+                      value={planForm.featuresText}
+                      onChange={(e) =>
+                        setPlanForm({ ...planForm, featuresText: e.target.value })
+                      }
+                      className="w-full px-3 py-2 border border-slate-300 rounded-xl text-xs font-mono"
+                    />
+                  </div>
+
+                  <div className="pt-3 flex items-center justify-end gap-2 border-t border-slate-100">
+                    <button
+                      type="button"
+                      onClick={() => setIsPlanModalOpen(false)}
+                      className="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black shadow-md flex items-center gap-1.5"
+                    >
+                      <Check className="w-4 h-4 stroke-[3]" />
+                      <span>{planForm.id ? "Update Plan" : "Create Plan"}</span>
                     </button>
                   </div>
                 </form>

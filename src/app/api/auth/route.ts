@@ -11,6 +11,7 @@ export async function GET() {
     const usersRes = await pool.query(`
       SELECT u.id, u.username, u.password, u.full_name, u.role, u.shop_id, u.phone, u.created_at,
              u.subscription_status, u.subscription_start_date, u.subscription_end_date,
+             u.plan_id, u.plan_name, u.storage_limit_mb, u.storage_used_mb,
              s.name as shop_name, s.branch_code
       FROM users u
       LEFT JOIN shops s ON u.shop_id = s.id
@@ -43,6 +44,7 @@ export async function GET() {
     const userRes = await pool.query(
       `SELECT u.id, u.username, u.full_name, u.role, u.shop_id, u.phone,
               u.subscription_status, u.subscription_start_date, u.subscription_end_date,
+              u.plan_id, u.plan_name, u.storage_limit_mb, u.storage_used_mb,
               s.name as shop_name, s.branch_code
        FROM users u
        LEFT JOIN shops s ON u.shop_id = s.id
@@ -98,6 +100,7 @@ export async function POST(req: NextRequest) {
       const res = await pool.query(
         `SELECT u.id, u.username, u.full_name, u.role, u.shop_id, u.phone,
                 u.subscription_status, u.subscription_start_date, u.subscription_end_date,
+                u.plan_id, u.plan_name, u.storage_limit_mb, u.storage_used_mb,
                 s.name as shop_name, s.branch_code
          FROM users u
          LEFT JOIN shops s ON u.shop_id = s.id
@@ -149,7 +152,15 @@ export async function POST(req: NextRequest) {
     }
 
     if (action === "update_subscription") {
-      const { userId, subscriptionStatus, subscriptionStartDate, subscriptionEndDate } = body;
+      const {
+        userId,
+        subscriptionStatus,
+        subscriptionStartDate,
+        subscriptionEndDate,
+        planId,
+        planName,
+        storageLimitMb,
+      } = body;
       if (!userId) {
         return NextResponse.json({ error: "User ID is required" }, { status: 400 });
       }
@@ -158,16 +169,19 @@ export async function POST(req: NextRequest) {
         `UPDATE users
          SET subscription_status = COALESCE($1, subscription_status),
              subscription_start_date = COALESCE($2, subscription_start_date),
-             subscription_end_date = COALESCE($3, subscription_end_date)
-         WHERE id = $4
-         RETURNING id, username, full_name, role, shop_id, subscription_status, subscription_start_date, subscription_end_date`,
-        [subscriptionStatus, subscriptionStartDate, subscriptionEndDate, userId]
+             subscription_end_date = COALESCE($3, subscription_end_date),
+             plan_id = COALESCE($4, plan_id),
+             plan_name = COALESCE($5, plan_name),
+             storage_limit_mb = COALESCE($6, storage_limit_mb)
+         WHERE id = $7
+         RETURNING id, username, full_name, role, shop_id, subscription_status, subscription_start_date, subscription_end_date, plan_id, plan_name, storage_limit_mb, storage_used_mb`,
+        [subscriptionStatus, subscriptionStartDate, subscriptionEndDate, planId || null, planName || null, storageLimitMb || null, userId]
       );
 
       return NextResponse.json({
         success: true,
         user: updateRes.rows[0],
-        message: "User subscription updated successfully!",
+        message: "User subscription and pricing plan updated successfully!",
       });
     }
 
@@ -201,7 +215,20 @@ export async function POST(req: NextRequest) {
     }
 
     if (action === "create_user") {
-      const { username, password, fullName, role, shopId, phone, subscriptionStatus, subscriptionStartDate, subscriptionEndDate } = body;
+      const {
+        username,
+        password,
+        fullName,
+        role,
+        shopId,
+        phone,
+        subscriptionStatus,
+        subscriptionStartDate,
+        subscriptionEndDate,
+        planId,
+        planName,
+        storageLimitMb,
+      } = body;
       if (!username || !password || !fullName) {
         return NextResponse.json(
           { error: "Username, Password, and Full Name are required." },
@@ -210,9 +237,9 @@ export async function POST(req: NextRequest) {
       }
 
       const insertRes = await pool.query(
-        `INSERT INTO users (username, password, full_name, role, shop_id, phone, subscription_status, subscription_start_date, subscription_end_date)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-         RETURNING id, username, full_name, role, shop_id, phone, subscription_status, subscription_start_date, subscription_end_date`,
+        `INSERT INTO users (username, password, full_name, role, shop_id, phone, subscription_status, subscription_start_date, subscription_end_date, plan_id, plan_name, storage_limit_mb, storage_used_mb)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+         RETURNING id, username, full_name, role, shop_id, phone, subscription_status, subscription_start_date, subscription_end_date, plan_id, plan_name, storage_limit_mb, storage_used_mb`,
         [
           username.trim(),
           password,
@@ -223,6 +250,10 @@ export async function POST(req: NextRequest) {
           subscriptionStatus || "active",
           subscriptionStartDate || new Date().toISOString().slice(0, 10),
           subscriptionEndDate || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
+          planId || 1,
+          planName || "Starter Plan",
+          storageLimitMb || 500,
+          4.5,
         ]
       );
 
