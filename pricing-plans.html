@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="ur" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Royal Tailors ERP — Subscription Plans & Pricing</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&family=Noto+Nastaliq+Urdu:wght@500;700&family=Noto+Sans+Arabic:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+            urdu: ['"Noto Sans Arabic"', '"Noto Nastaliq Urdu"', 'system-ui', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#ecfdf5',
+              100: '#d1fae5',
+              500: '#10b981',
+              600: '#059669',
+              700: '#047857',
+              800: '#065f46',
+              900: '#064e3b',
+              950: '#022c22',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', 'Noto Sans Arabic', system-ui, sans-serif;
+      background: radial-gradient(circle at 50% 0%, #064e3b 0%, #022c22 45%, #030712 100%);
+      color: #f3f4f6;
+      min-height: 100vh;
+    }
+    .glass-card {
+      background: rgba(17, 24, 39, 0.75);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(16, 185, 129, 0.2);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .glass-card:hover {
+      transform: translateY(-6px);
+      border-color: rgba(16, 185, 129, 0.5);
+      box-shadow: 0 20px 35px -10px rgba(16, 185, 129, 0.25);
+    }
+    .glass-featured {
+      background: linear-gradient(145deg, rgba(6, 78, 59, 0.8) 0%, rgba(15, 23, 42, 0.9) 100%);
+      border: 2px solid #10b981;
+      box-shadow: 0 25px 45px -12px rgba(16, 185, 129, 0.4);
+    }
+    .glass-featured:hover {
+      transform: translateY(-8px);
+    }
+    .gold-gradient {
+      background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 50%, #d97706 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .emerald-gradient {
+      background: linear-gradient(135deg, #34d399 0%, #10b981 50%, #059669 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    @media print {
+      body {
+        background: #ffffff !important;
+        color: #000000 !important;
+      }
+      .glass-card, .glass-featured {
+        background: #ffffff !important;
+        border: 1px solid #cccccc !important;
+        color: #000000 !important;
+        box-shadow: none !important;
+      }
+      .no-print {
+        display: none !important;
+      }
+    }
+  </style>
+</head>
+<body class="selection:bg-emerald-500 selection:text-white">
+
+  <!-- TOP HEADER / HERO -->
+  <header class="relative pt-12 pb-10 px-4 sm:px-6 lg:px-8 text-center max-w-5xl mx-auto">
+    <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-950/80 border border-emerald-500/40 text-emerald-400 text-xs sm:text-sm font-extrabold mb-6 shadow-lg shadow-emerald-900/30">
+      <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+      <span>آفیشل سافٹ ویئر سبسکرپشن پلانز ۲۰۲۶</span>
+    </div>
+
+    <h1 class="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight mb-4 text-white">
+      روئل ٹیلرز <span class="emerald-gradient">سلائی اینڈ کھاتہ ERP</span>
+    </h1>
+
+    <p class="text-base sm:text-xl text-slate-300 max-w-2xl mx-auto font-medium leading-relaxed mb-6">
+      ٹیلرز، شاپ اونرز اور فیشن بوٹیکس کے لیے جدید کلاؤڈ سسٹم۔ مکمل الگ ڈیٹا، آن لائن آرڈرز، ڈیجیٹل پرچی اور زبردست اسپیڈ۔
+    </p>
+
+    <!-- CONTACT PILL BAR -->
+    <div class="inline-flex flex-wrap items-center justify-center gap-3 sm:gap-4 p-2 sm:p-3 rounded-2xl bg-slate-900/90 border border-slate-700/80 shadow-2xl backdrop-blur-md">
+      <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-800/80 text-xs sm:text-sm font-bold text-slate-200">
+        <span class="text-emerald-400">👤 اونر / ایڈمن:</span>
+        <span class="text-white font-extrabold">انس حسین (Anas Hussain)</span>
+      </div>
+
+      <a href="tel:03112996610" class="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs sm:text-sm font-black transition active:scale-95 shadow-md shadow-emerald-900/50">
+        <span>📞 رابطہ / فون:</span>
+        <span dir="ltr" class="font-mono tracking-wider font-extrabold">0311-2996610</span>
+      </a>
+
+      <a href="https://wa.me/923112996610?text=Salam%20Anas%20Bhai,%20mujhe%20Royal%20Tailors%20app%20ka%20plan%20chahiye" target="_blank" class="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-[#25D366] hover:bg-[#20ba5a] text-slate-950 text-xs sm:text-sm font-black transition active:scale-95 shadow-md">
+        <span>💬 واٹس ایپ:</span>
+        <span dir="ltr" class="font-mono font-extrabold">0311-2996610</span>
+      </a>
+
+      <a href="mailto:anas.megatech@gmail.com" class="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs sm:text-sm font-bold transition">
+        <span>✉️ ای میل:</span>
+        <span dir="ltr" class="font-mono text-emerald-300">anas.megatech@gmail.com</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- GUARANTEED INCLUSIONS BANNER -->
+  <section class="max-w-6xl mx-auto px-4 sm:px-6 mb-12">
+    <div class="p-4 sm:p-6 rounded-2xl bg-gradient-to-r from-emerald-950/70 via-slate-900/90 to-emerald-950/70 border border-emerald-500/30 text-center">
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs sm:text-sm">
+        <div class="flex items-center justify-center gap-2 text-emerald-300 font-bold">
+          <svg class="w-5 h-5 text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+          <span>مفت انسٹالیشن اور فل سیٹ اپ (Free Installation)</span>
+        </div>
+        <div class="flex items-center justify-center gap-2 text-emerald-300 font-bold">
+          <svg class="w-5 h-5 text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+          <span>بغیر کسی تعطل کے 99.9% مسلسل سروس (Smooth Continuity)</span>
+        </div>
+        <div class="flex items-center justify-center gap-2 text-emerald-300 font-bold">
+          <svg class="w-5 h-5 text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+          <span>ہر کمپنی کا 100% محفوظ و علیحدہ ڈیٹا (Isolated Database)</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6 PRICING PLANS GRID -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 items-stretch">
+
+      <!-- PLAN 1: RS. 500 -->
+      <div class="glass-card rounded-3xl p-6 sm:p-7 flex flex-col justify-between relative overflow-hidden">
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-xs font-black uppercase tracking-wider px-3 py-1 rounded-full bg-slate-800 text-emerald-400 border border-slate-700">
+              Starter Starter Plan
+            </span>
+            <span class="text-[11px] font-bold text-slate-400">1 شاپ / کمپنی</span>
+          </div>
+
+          <h3 class="text-xl sm:text-2xl font-black text-white mb-1">اسٹارٹر بیسک پلان</h3>
+          <p class="text-xs text-slate-400 mb-5">چھوٹے ٹیلرز اور نئی شاپس کے لیے بہترین و سستا حل۔</p>
+
+          <div class="mb-6 pb-6 border-b border-slate-800">
+            <div class="flex items-baseline gap-1" dir="ltr">
+              <span class="text-xs font-bold text-slate-400">Rs.</span>
+              <span class="text-4xl font-black text-white">500</span>
+              <span class="text-xs font-semibold text-slate-400">/ ماہانہ (Per Month)</span>
+            </div>
+          </div>
+
+          <!-- SPECS PILLS -->
+          <div class="grid grid-cols-2 gap-2 mb-6">
+            <div class="p-3 rounded-2xl bg-slate-900/90 border border-slate-800">
+              <span class="text-[10px] font-bold uppercase text-slate-400 block mb-0.5">ڈیٹا بیس اسٹوریج</span>
+              <span class="text-sm font-black text-emerald-400">500 MB Monthly</span>
+            </div>
+            <div class="p-3 rounded-2xl bg-slate-900/90 border border-slate-800">
+              <span class="text-[10px] font-bold uppercase text-slate-400 block mb-0.5">کسٹمائزیشن</span>
+              <span class="text-sm font-black text-slate-300">اسٹینڈرڈ سپورٹ</span>
+            </div>
+          </div>
+
+          <!-- FEATURES -->
+          <ul class="space-y-3 text-xs sm:text-sm text-slate-300 mb-6">
+            <li class="flex items-start gap-2.5">
+              <svg class="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+              <span>مکمل آن لائن پرچی سسٹم و کسٹمر ناپ بک</span>
+            </li>
+            <li class="flex items-start gap-2.5">
+              <svg class="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+              <span>مفت انسٹالیشن اور مکمل گائیڈینس</span>
+            </li>
+            <li class="flex items-start gap-2.5">
+              <svg class="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+              <span>ہموار کنٹینیوٹی گارنٹی (Smooth Continuity)</span>
+            </li>
+            <li class="flex items-start gap-2.5">
+              <svg class="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+              <span>1 ڈیڈیکیٹڈ کمپنی و ماسٹر ایڈمن لاگ ان</span>
+            </li>
+            <li class="flex items-start gap-2.5">
+              <svg class="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+              <span>لائیو اسٹوریج میٹر (Real-time DB Monitor)</span>
+            </li>
+          </ul>
+        </div>
+
+        <a href="https://wa.me/923112996610?text=Salam%20Anas%20Bhai,%20mujhe%20Rs.%20500%20Starter%20Plan%20chahiye" target="_blank" class="w-full py-3 rounded-2xl bg-slate-800 hover:bg-emerald-600 text-white font-extrabold text-xs sm:text-sm text-center transition active:scale-95 border border-slate-700 hover:border-emerald-500 shadow-md">
+          یہ پلان حاصل کریں (Rs. 500)
+        </a>
+      </div>
+
+      <!-- PLAN 2: RS. 1000 -->
+      <div class="glass-card rounded-3xl p-6 sm:p-7 flex flex-col justify-between relative overflow-hidden">
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-xs font-black uppercase tracking-wider px-3 py-1 rounded-full bg-slate-800 text-emerald-400 border border-slate-700">
+              Pro Value
+            </span>
+            <span class="text-[11px] font-bold text-slate-400">1 شاپ / کمپنی</span>
+          </div>
+
+          <h3 class="text-xl sm:text-2xl font-black text-white mb-1">اسٹینڈرڈ پرو پلان</h3>
+          <p class="text-xs text-slate-400 mb-5">مستقل دکانوں کے لیے تیز ترین اور ڈبل اسٹوریج۔</p>
+
+          <div class="mb-6 pb-6 border-b border-slate-800">
+            <div class="flex items-baseline gap-1" dir="ltr">
+              <span class="text-xs font-bold text-slate-400">Rs.</span>
+              <span class="text-4xl font-black text-white">1,000</span>
+              <span class="text-xs font-semibold text-slate-400">/ ماہانہ (Per Month)</span>
+            </div>
+          </div>
+
+          <!-- SPECS PILLS -->
+          <div class="grid grid-cols-2 gap-2 mb-6">
+            <div class="p-3 rounded-2xl bg-slate-900/90 border border-slate-800">
+              <span class="text-[10px] font-bold uppercase text-slate-400 block mb-0.5">ڈیٹا بیس اسٹوریج</span>
+              <span class="text-sm font-black text-emerald-400">1 GB (1,000 MB)</span>
+            </div>
+            <div class="p-3 rounded-2xl bg-slate-900/90 border border-slate-800">
+              <span class="text-[10px] font-bold uppercase text-slate-400 block mb-0.5">ماہانہ کسٹمائزیشن</span>
+              <span class="text-sm font-black text-amber-400">1 Customization / mo</span>
+            </div>
+          </div>
+
+          <!-- FEATURES -->
+          <ul class="space-y-3 text-xs sm:text-sm text-slate-300 mb-6">
+            <li class="flex items-start gap-2.5">
+              <svg class="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+              <span><strong>1GB ڈیٹا بیس اسٹوریج</strong> (ہزاروں آرڈرز کا محفوظ ریکارڈ)</span>
+            </li>
+            <li class="flex items-start gap-2.5">
+              <svg class="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+              <span><strong>ہر مہینے 1 کسٹمائزیشن فری</strong> (پرچی یا فارم میں اپنی مرضی کی تبدیلی)</span>
+            </li>
+            <li class="flex items-start gap-2.5">
+              <svg class="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+              <span>مفت انسٹالیشن و کلاؤڈ لائیو سیٹ اپ</span>
+            </li>
+            <li class="flex items-start gap-2.5">
+              <svg class="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+              <span>کھاتہ لیجر، بقایا جات، اور واٹس ایپ الرٹ</span>
+            </li>
+            <li class="flex items-start gap-2.5">
+              <svg class="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+              <span>1 کلک میں مکمل ڈیٹا بیس کا SQL بیک اپ ڈاؤنلوڈ</span>
+            </li>
+          </ul>
+        </div>
+
+        <a href="https://wa.me/923112996610?text=Salam%20Anas%20Bhai,%20mujhe%20Rs.%201000%20Standard%20Pro%20Plan%20chahiye" target="_blank" class="w-full py-3 rounded-2xl bg-slate-800 hover:bg-emerald-600 text-white font-extrabold text-xs sm:text-sm text-center transition active:scale-95 border border-slate-700 hover:border-emerald-500 shadow-md">
+          یہ پلان حاصل کریں (Rs. 1,000)
+        </a>
+      </div>
+
+      <!-- PLAN 3: RS. 1500 -->
+      <div class="glass-card rounded-3xl p-6 sm:p-7 flex flex-col justify-between relative overflow-hidden">
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-xs font-black uppercase tracking-wider px-3 py-1 rounded-full bg-slate-800 text-emerald-400 border border-slate-700">
+              Growth Plan
+            </span>
+            <span class="text-[11px] font-bold text-slate-400">1 شاپ / کمپنی</span>
+          </div>
+
+          <h3 class="text-xl sm:text-2xl font-black text-white mb-1">بزنس گروتھ پلان</h3>
+          <p class="text-xs text-slate-400 mb-5">تیزی سے پھیلتے ہوئے ٹیلرنگ کاروبار کے لیے۔</p>
+
+          <div class="mb-6 pb-6 border-b border-slate-800">
+            <div class="flex items-baseline gap-1" dir="ltr">
+              <span class="text-xs font-bold text-slate-400">Rs.</span>
+              <span class="text-4xl font-black text-white">1,500</span>
+              <span class="text-xs font-semibold text-slate-400">/ ماہانہ (Per Month)</span>
+            </div>
+          </div>
+
+          <!-- SPECS PILLS -->
+          <div class="grid grid-cols-2 gap-2 mb-6">
+            <div class="p-3 rounded-2xl bg-slate-900/90 border border-slate-800">
+              <span class="text-[10px] font-bold uppercase text-slate-400 block mb-0.5">ڈیٹا بیس اسٹوریج</span>
+              <span class="text-sm font-black text-emerald-400">1.5 GB Storage</span>
+            </div>
+            <div class="p-3 rounded-2xl bg-slate-900/90 border border-slate-800">
+              <span class="text-[10px] font-bold uppercase text-slate-400 block mb-0.5">ماہانہ کسٹمائزیشن</span>
+              <span class="text-sm font-black text-amber-400">2 Customizations / mo</span>
+            </div>
+          </div>
+
+          <!-- FEATURES -->
+          <ul class="space-y-3 text-xs sm:text-sm text-slate-300 mb-6">
+            <li class="flex items-start gap-2.5">
+              <svg class="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+              <span><strong>1.5 GB ڈیٹا بیس اسٹوریج</strong></span>
+            </li>
+            <li class="flex items-start gap-2.5">
+              <svg class="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+              <span><strong>ماہانہ 2 کسٹمائزیشنز فری</strong></span>
+            </li>
+            <li class="flex items-start gap-2.5">
+              <svg class="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+              <span>فری انسٹالیشن اور 24/7 ہموار سروس گارنٹی</span>
+            </li>
+            <li class="flex items-start gap-2.5">
+              <svg class="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+              <span>رپورٹس، ڈیلی آمدنی و نفع نقصان کا خودکار حساب</span>
+            </li>
+          </ul>
+        </div>
+
+        <a href="https://wa.me/923112996610?text=Salam%20Anas%20Bhai,%20mujhe%20Rs.%201500%20Business%20Growth%20Plan%20chahiye" target="_blank" class="w-full py-3 rounded-2xl bg-slate-800 hover:bg-emerald-600 text-white font-extrabold text-xs sm:text-sm text-center transition active:scale-95 border border-slate-700 hover:border-emerald-500 shadow-md">
+          یہ پلان حاصل کریں (Rs. 1,500)
+        </a>
+      </div>
+
+      <!-- PLAN 4: RS. 2000 (MOST POPULAR) -->
+      <div class="glass-featured rounded-3xl p-6 sm:p-7 flex flex-col justify-between relative overflow-hidden">
+        <div class="absolute top-0 right-0 left-0 bg-gradient-to-r from-emerald-500 via-teal-400 to-emerald-500 text-slate-950 text-center font-black text-xs py-1.5 uppercase tracking-widest shadow-md">
+          ⭐ سب سے زیادہ مقبول (Most Popular Choice)
+        </div>
+
+        <div class="pt-4">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-xs font-black uppercase tracking-wider px-3 py-1 rounded-full bg-emerald-950 text-emerald-300 border border-emerald-500/50">
+              High Performance
+            </span>
+            <span class="text-[11px] font-bold text-emerald-200">1 شاپ / کمپنی</span>
+          </div>
+
+          <h3 class="text-2xl sm:text-3xl font-black text-white mb-1">پریمیم اسکیل پلان</h3>
+          <p class="text-xs text-emerald-100/80 mb-5">زیادہ کام اور بڑے گاہکوں والی مصروف دکانوں کے لیے۔</p>
+
+          <div class="mb-6 pb-6 border-b border-emerald-500/30">
+            <div class="flex items-baseline gap-1" dir="ltr">
+              <span class="text-xs font-bold text-slate-300">Rs.</span>
+              <span class="text-4xl font-black text-white">2,000</span>
+              <span class="text-xs font-semibold text-emerald-200">/ ماہانہ (Per Month)</span>
+            </div>
+          </div>
+
+          <!-- SPECS PILLS -->
+          <div class="grid grid-cols-2 gap-2 mb-6">
+            <div class="p-3 rounded-2xl bg-slate-950/70 border border-emerald-500/40">
+              <span class="text-[10px] font-bold uppercase text-emerald-300 block mb-0.5">ڈیٹا بیس اسٹوریج</span>
+              <span class="text-sm font-black text-white">2 GB (2,000 MB)</span>
+            </div>
+            <div class="p-3 rounded-2xl bg-slate-950/70 border border-emerald-500/40">
+              <span class="text-[10px] font-bold uppercase text-emerald-300 block mb-0.5">ماہانہ کسٹمائزیشن</span>
+              <span class="text-sm font-black text-amber-300">3 Customizations / mo</span>
+            </div>
+          </div>
+
+          <!-- FEATURES -->
+          <ul class="space-y-3 text-xs sm:text-sm text-slate-100 mb-6">
+            <li class="flex items-start gap-2.5">
+              <svg class="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+              <span><strong>2 GB ہیوی ڈیٹا بیس اسٹوریج</strong></span>
+            </li>
+            <li class="flex items-start gap-2.5">
+              <svg class="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+              <span><strong>ماہانہ 3 کسٹمائزیشنز بالکل مفت</strong> (ریٹس، ناپ فارم، پرچی ڈیزائن)</span>
+            </li>
+            <li class="flex items-start gap-2.5">
+              <svg class="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+              <span>فری انسٹالیشن اور ہائی اسپیڈ ڈیٹا بیس پرفارمنس</span>
+            </li>
+            <li class="flex items-start gap-2.5">
+              <svg class="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+              <span>پرائیورٹی کسٹمر سپورٹ بذریعہ واٹس ایپ و کال</span>
+            </li>
+          </ul>
+        </div>
+
+        <a href="https://wa.me/923112996610?text=Salam%20Anas%20Bhai,%20mujhe%20Rs.%202000%20Premium%20Scale%20Plan%20chahiye" target="_blank" class="w-full py-3.5 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-sm text-center transition active:scale-95 shadow-xl shadow-emerald-500/30">
+          🔥 یہ سب سے مقبول پلان حاصل کریں (Rs. 2,000)
+        </a>
+      </div>
+
+      <!-- PLAN 5: RS. 3500 -->
+      <div class="glass-card rounded-3xl p-6 sm:p-7 flex flex-col justify-between relative overflow-hidden">
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-xs font-black uppercase tracking-wider px-3 py-1 rounded-full bg-slate-800 text-purple-400 border border-slate-700">
+              Enterprise
+            </span>
+            <span class="text-[11px] font-bold text-slate-400">1 شاپ / کمپنی</span>
+          </div>
+
+          <h3 class="text-xl sm:text-2xl font-black text-white mb-1">انٹرپرائز ایلیٹ پلان</h3>
+          <p class="text-xs text-slate-400 mb-5">اعلیٰ پیمانے کے فیشن ہاؤسز اور لگژری ٹیلرز کے لیے۔</p>
+
+          <div class="mb-6 pb-6 border-b border-slate-800">
+            <div class="flex items-baseline gap-1" dir="ltr">
+              <span class="text-xs font-bold text-slate-400">Rs.</span>
+              <span class="text-4xl font-black text-white">3,500</span>
+              <span class="text-xs font-semibold text-slate-400">/ ماہانہ (Per Month)</span>
+            </div>
+          </div>
+
+          <!-- SPECS PILLS -->
+          <div class="grid grid-cols-2 gap-2 mb-6">
+            <div class="p-3 rounded-2xl bg-slate-900/90 border border-slate-800">
+              <span class="text-[10px] font-bold uppercase text-slate-400 block mb-0.5">ڈیٹا بیس اسٹوریج</span>
+              <span class="text-sm font-black text-purple-400">3.5 GB Storage</span>
+            </div>
+            <div class="p-3 rounded-2xl bg-slate-900/90 border border-slate-800">
+              <span class="text-[10px] font-bold uppercase text-slate-400 block mb-0.5">ماہانہ کسٹمائزیشن</span>
+              <span class="text-sm font-black text-amber-400">4 Customizations / mo</span>
+            </div>
+          </div>
+
+          <!-- FEATURES -->
+          <ul class="space-y-3 text-xs sm:text-sm text-slate-300 mb-6">
+            <li class="flex items-start gap-2.5">
+              <svg class="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+              <span><strong>3.5 GB الٹرا اسٹوریج</strong></span>
+            </li>
+            <li class="flex items-start gap-2.5">
+              <svg class="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+              <span><strong>ماہانہ 4 کسٹمائزیشنز</strong> بالکل مفت</span>
+            </li>
+            <li class="flex items-start gap-2.5">
+              <svg class="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+              <span>فری انسٹالیشن اور ڈیٹا مائیگریشن سپورٹ</span>
+            </li>
+            <li class="flex items-start gap-2.5">
+              <svg class="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+              <span>ہموار کنٹینیوٹی اور پریمیئم بیک اپ پروٹیکشن</span>
+            </li>
+          </ul>
+        </div>
+
+        <a href="https://wa.me/923112996610?text=Salam%20Anas%20Bhai,%20mujhe%20Rs.%203500%20Enterprise%20Elite%20Plan%20chahiye" target="_blank" class="w-full py-3 rounded-2xl bg-slate-800 hover:bg-emerald-600 text-white font-extrabold text-xs sm:text-sm text-center transition active:scale-95 border border-slate-700 hover:border-emerald-500 shadow-md">
+          یہ پلان حاصل کریں (Rs. 3,500)
+        </a>
+      </div>
+
+      <!-- PLAN 6: RS. 5000 (ULTIMATE VIP) -->
+      <div class="glass-card rounded-3xl p-6 sm:p-7 flex flex-col justify-between relative overflow-hidden border-amber-500/40">
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-xs font-black uppercase tracking-wider px-3 py-1 rounded-full bg-amber-950 text-amber-300 border border-amber-500/50">
+              👑 VIP Ultimate
+            </span>
+            <span class="text-[11px] font-bold text-slate-400">1 شاپ / کمپنی</span>
+          </div>
+
+          <h3 class="text-xl sm:text-2xl font-black text-white mb-1">الٹیمیٹ وی آئی پی پلان</h3>
+          <p class="text-xs text-slate-400 mb-5">مکمل آزادی، زیادہ ترین اسٹوریج اور ماہانہ 6 کسٹمائزیشنز۔</p>
+
+          <div class="mb-6 pb-6 border-b border-slate-800">
+            <div class="flex items-baseline gap-1" dir="ltr">
+              <span class="text-xs font-bold text-slate-400">Rs.</span>
+              <span class="text-4xl font-black text-amber-400">5,000</span>
+              <span class="text-xs font-semibold text-slate-400">/ ماہانہ (Per Month)</span>
+            </div>
+          </div>
+
+          <!-- SPECS PILLS -->
+          <div class="grid grid-cols-2 gap-2 mb-6">
+            <div class="p-3 rounded-2xl bg-slate-900/90 border border-slate-800">
+              <span class="text-[10px] font-bold uppercase text-slate-400 block mb-0.5">ڈیٹا بیس اسٹوریج</span>
+              <span class="text-sm font-black text-amber-300">5 GB (5,000 MB)</span>
+            </div>
+            <div class="p-3 rounded-2xl bg-slate-900/90 border border-slate-800">
+              <span class="text-[10px] font-bold uppercase text-slate-400 block mb-0.5">ماہانہ کسٹمائزیشن</span>
+              <span class="text-sm font-black text-amber-300">6 Customizations / mo</span>
+            </div>
+          </div>
+
+          <!-- FEATURES -->
+          <ul class="space-y-3 text-xs sm:text-sm text-slate-300 mb-6">
+            <li class="flex items-start gap-2.5">
+              <svg class="w-4 h-4 text-amber-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+              <span><strong>5 GB سب سے بڑی ڈیٹا بیس اسٹوریج</strong></span>
+            </li>
+            <li class="flex items-start gap-2.5">
+              <svg class="w-4 h-4 text-amber-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+              <span><strong>ہر مہینے 6 کسٹمائزیشنز فری</strong> (خصوصی فیچرز کا اضافہ)</span>
+            </li>
+            <li class="flex items-start gap-2.5">
+              <svg class="w-4 h-4 text-amber-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+              <span>وی آئی پی پرائیورٹی ڈائریکٹ سپورٹ (Direct Call Support)</span>
+            </li>
+            <li class="flex items-start gap-2.5">
+              <svg class="w-4 h-4 text-amber-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+              <span>فری انسٹالیشن، لائف ٹائم کنٹینیوٹی اور روزانہ بیک اپ</span>
+            </li>
+          </ul>
+        </div>
+
+        <a href="https://wa.me/923112996610?text=Salam%20Anas%20Bhai,%20mujhe%20Rs.%205000%20Ultimate%20VIP%20Plan%20chahiye" target="_blank" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-sm text-center transition active:scale-95 shadow-xl shadow-amber-500/20">
+          👑 وی آئی پی پلان حاصل کریں (Rs. 5,000)
+        </a>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- CONTACT & ORDER FOOTER -->
+  <footer class="border-t border-slate-800/80 bg-slate-950/80 py-12 px-4 sm:px-6 text-center">
+    <div class="max-w-3xl mx-auto space-y-6">
+      <h2 class="text-2xl sm:text-3xl font-black text-white">
+        کیا آپ اپنے ٹیلرنگ کاروبار کو ڈیجیٹل کرنا چاہتے ہیں؟
+      </h2>
+      <p class="text-sm sm:text-base text-slate-400">
+        ابھی رابطہ کریں، آپ کا اکاؤنٹ اور شاپ 10 منٹ کے اندر سیٹ اپ کر کے لائیو کر دیا جائے گا۔
+      </p>
+
+      <div class="p-6 rounded-3xl bg-slate-900 border border-slate-800 shadow-xl max-w-xl mx-auto space-y-4">
+        <div class="text-lg font-black text-white flex items-center justify-center gap-2">
+          <span class="text-emerald-400">👤 اونر و ڈویلپر:</span>
+          <span>انس حسین (Anas Hussain)</span>
+        </div>
+
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
+          <a href="tel:03112996610" class="w-full sm:w-auto px-6 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-sm flex items-center justify-center gap-2 shadow-lg transition">
+            <span>📞 کال کریں:</span>
+            <span dir="ltr" class="font-mono">0311-2996610</span>
+          </a>
+
+          <a href="https://wa.me/923112996610?text=Salam%20Anas%20Bhai,%20mujhe%20Royal%20Tailors%20Software%20ka%20setup%20karwana%20hai" target="_blank" class="w-full sm:w-auto px-6 py-3 rounded-xl bg-[#25D366] hover:bg-[#20ba5a] text-slate-950 font-black text-sm flex items-center justify-center gap-2 shadow-lg transition">
+            <span>💬 واٹس ایپ میسج:</span>
+            <span dir="ltr" class="font-mono">0311-2996610</span>
+          </a>
+        </div>
+
+        <div class="text-xs text-slate-400 pt-2 border-t border-slate-800">
+          <span>ای میل: </span>
+          <a href="mailto:anas.megatech@gmail.com" class="text-emerald-400 font-mono font-bold hover:underline">
+            anas.megatech@gmail.com
+          </a>
+        </div>
+      </div>
+
+      <div class="text-xs text-slate-500 pt-6">
+        © 2026 Royal Tailors ERP System. All Rights Reserved. Crafted with ❤️ by Anas Hussain.
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>
