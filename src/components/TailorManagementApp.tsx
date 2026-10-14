@@ -1227,10 +1227,9 @@ export default function TailorManagementApp() {
               },
               {
                 id: "shops",
-                label: "Shop Branches",
+                label: "Company Setup",
                 icon: Store,
-                badge: `${activeShops.length}/${shops.length}`,
-                hidden: !!currentUser?.shop_id,
+                hidden: true, // Multi-branch concept removed per user request: each company runs on its single main account
               },
               {
                 id: "settings",
@@ -1349,40 +1348,31 @@ export default function TailorManagementApp() {
               </button>
 
               <Store className="w-4 h-4 text-emerald-600 shrink-0 hidden sm:block" />
-              {currentUser?.shop_id ? (
+              {currentUser?.role !== "superadmin" ? (
                 <div className="min-w-0 truncate">
                   <span className="text-[9px] font-extrabold uppercase text-emerald-700 block leading-tight">
-                    Isolated Branch
+                    Dedicated Company Account
                   </span>
                   <span className="text-xs sm:text-sm font-extrabold text-slate-900 truncate block">
-                    {currentUser.shop_name || shops.find((s) => s.id === currentUser.shop_id)?.name || "Demo Branch"}
-                  </span>
-                </div>
-              ) : activeShops.length <= 1 ? (
-                <div className="min-w-0 truncate">
-                  <span className="text-[9px] font-extrabold uppercase text-emerald-700 block leading-tight">
-                    Shop Branch
-                  </span>
-                  <span className="text-xs sm:text-sm font-extrabold text-slate-900 truncate block">
-                    {activeShops[0]?.name || shops[0]?.name || "Main Shop"}
+                    {currentUser?.shop_name || shops.find((s) => s.id === currentUser?.shop_id)?.name || "Royal Tailors"}
                   </span>
                 </div>
               ) : (
                 <div className="min-w-0">
                   <label className="text-[9px] font-extrabold uppercase text-slate-400 block leading-tight">
-                    Branch Filter
+                    Super Admin • Tailor Company Filter
                   </label>
                   <select
                     value={selectedShopId}
                     onChange={(e) => setSelectedShopId(e.target.value)}
-                    className="text-xs sm:text-sm font-extrabold text-slate-900 bg-transparent outline-none cursor-pointer pr-2 max-w-[140px] sm:max-w-none truncate"
+                    className="text-xs sm:text-sm font-extrabold text-slate-900 bg-transparent outline-none cursor-pointer pr-2 max-w-[160px] sm:max-w-none truncate"
                   >
                     <option value="all">
-                      All Branches ({activeShops.length})
+                      All Companies ({shops.length})
                     </option>
-                    {activeShops.map((s) => (
+                    {shops.map((s) => (
                       <option key={s.id} value={String(s.id)}>
-                        {s.name} [{s.branch_code}]
+                        {s.name}
                       </option>
                     ))}
                   </select>
@@ -4804,16 +4794,16 @@ export default function TailorManagementApp() {
                 </div>
               </div>
 
-              {/* All Tailor Shops & Branches Directory with Open Company trigger */}
+              {/* All Tailor Companies Directory with Open Company trigger */}
               <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
                   <div>
                     <h3 className="font-extrabold text-slate-900 text-base flex items-center gap-2">
                       <Store className="w-5 h-5 text-emerald-600" />
-                      All Registered Tailor Companies & Branches ({shops.length})
+                      All Registered Tailor Companies ({shops.length})
                     </h3>
                     <p className="text-xs text-slate-500 mt-0.5">
-                      Har company ka data mukammal alag hai. Nayi company open karne par uska alag isolated branch create ho jata hai.
+                      Har company ka data mukammal alag hai. Nayi company open karne par uska 100% isolated database aur single main account banta hai.
                     </p>
                   </div>
 
@@ -4935,7 +4925,7 @@ export default function TailorManagementApp() {
 
                   <div>
                     <label className="block text-xs font-bold uppercase text-slate-700 mb-1">
-                      Assign Tailor Company / Branch
+                      Assign Tailor Company Account
                     </label>
                     <select
                       value={editUserForm.shopId}
@@ -4944,10 +4934,10 @@ export default function TailorManagementApp() {
                       }
                       className="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm bg-white font-semibold"
                     >
-                      <option value="">No Specific Shop (Global Access)</option>
+                      <option value="">No Specific Company (Global Super Admin Access)</option>
                       {shops.map((s) => (
                         <option key={s.id} value={s.id}>
-                          {s.name} ({s.branch_code})
+                          {s.name}
                         </option>
                       ))}
                     </select>
@@ -4981,7 +4971,7 @@ export default function TailorManagementApp() {
                   <div className="flex items-center gap-2">
                     <Store className="w-5 h-5 text-emerald-400" />
                     <h3 className="font-black text-sm">
-                      Open New Tailor Company / Shop
+                      Open New Tailor Company
                     </h3>
                   </div>
                   <button
@@ -5012,12 +5002,12 @@ export default function TailorManagementApp() {
                     </div>
                     <div>
                       <label className="block text-xs font-bold uppercase text-slate-700 mb-1">
-                        Branch Code *
+                        Company Code *
                       </label>
                       <input
                         type="text"
                         required
-                        placeholder="e.g. MCT-21"
+                        placeholder="e.g. MCT-01"
                         value={newCompanyForm.branch_code}
                         onChange={(e) =>
                           setNewCompanyForm({

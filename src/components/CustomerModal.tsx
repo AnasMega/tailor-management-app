@@ -234,36 +234,17 @@ export default function CustomerModal({
               />
             </div>
 
-            {displayShops.length > 1 ? (
-              <div>
-                <label className="block text-xs font-bold uppercase text-slate-700 mb-1">
-                  Shop / Branch
-                </label>
-                <select
-                  value={shopId}
-                  onChange={(e) => setShopId(e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm bg-white font-semibold"
-                >
-                  {displayShops.map((s) => (
-                    <option key={s.id} value={s.id}>
-                      {s.name} ({s.branch_code})
-                    </option>
-                  ))}
-                </select>
-              </div>
-            ) : (
-              <div>
-                <label className="block text-xs font-bold uppercase text-slate-700 mb-1">
-                  Shop Branch
-                </label>
-                <input
-                  type="text"
-                  disabled
-                  value={displayShops[0]?.name || "Main Shop"}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm bg-slate-100 text-slate-600 font-semibold"
-                />
-              </div>
-            )}
+            <div>
+              <label className="block text-xs font-bold uppercase text-slate-700 mb-1">
+                Company Account
+              </label>
+              <input
+                type="text"
+                disabled
+                value={displayShops.find((s) => String(s.id) === String(shopId))?.name || displayShops[0]?.name || "Main Company"}
+                className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm bg-slate-100 text-slate-600 font-semibold"
+              />
+            </div>
 
             <div>
               <label className="block text-xs font-bold uppercase text-slate-700 mb-1">
