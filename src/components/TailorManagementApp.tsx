@@ -717,6 +717,30 @@ export default function TailorManagementApp() {
     }
   };
 
+  const handleUpdateAllowedBranches = async (shopId: number, allowedBranches: number) => {
+    try {
+      const res = await fetch("/api/shops", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "update_allowed_branches",
+          id: shopId,
+          allowed_branches: allowedBranches,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        alert(data.error || "Failed to update branch limit");
+        return;
+      }
+      showToast(`Branch limit updated to ${allowedBranches} branch(es)!`);
+      fetchAllData();
+    } catch (e) {
+      console.error(e);
+      alert("Network error updating branch limit");
+    }
+  };
+
   const handleSavePricingPlan = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -1228,9 +1252,10 @@ export default function TailorManagementApp() {
               },
               {
                 id: "shops",
-                label: "Company Setup",
+                label: "Shop Branches",
                 icon: Store,
-                hidden: true, // Multi-branch concept removed per user request: each company runs on its single main account
+                // Only visible if company is explicitly configured by Super Admin to have > 1 branches, or if user is superadmin
+                hidden: currentUser?.role !== "superadmin" && ((shops.find((s) => s.id === currentUser?.shop_id)?.allowed_branches || 1) <= 1),
               },
               {
                 id: "settings",
@@ -1350,14 +1375,34 @@ export default function TailorManagementApp() {
 
               <Store className="w-4 h-4 text-emerald-600 shrink-0 hidden sm:block" />
               {currentUser?.role !== "superadmin" ? (
-                <div className="min-w-0 truncate">
-                  <span className="text-[9px] font-extrabold uppercase text-emerald-700 block leading-tight">
-                    Dedicated Company Account
-                  </span>
-                  <span className="text-xs sm:text-sm font-extrabold text-slate-900 truncate block">
-                    {currentUser?.shop_name || shops.find((s) => s.id === currentUser?.shop_id)?.name || "Royal Tailors"}
-                  </span>
-                </div>
+                shops.length > 1 ? (
+                  <div className="min-w-0">
+                    <span className="text-[9px] font-extrabold uppercase text-emerald-700 block leading-tight">
+                      Active Branch ({shops.length} Branches Allowed)
+                    </span>
+                    <select
+                      value={selectedShopId}
+                      onChange={(e) => setSelectedShopId(e.target.value)}
+                      className="text-xs sm:text-sm font-extrabold text-slate-900 bg-transparent outline-none cursor-pointer pr-2 max-w-[160px] sm:max-w-none truncate"
+                    >
+                      <option value="all">All Branches ({shops.length})</option>
+                      {shops.map((s) => (
+                        <option key={s.id} value={String(s.id)}>
+                          {s.name} ({s.branch_code})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                ) : (
+                  <div className="min-w-0 truncate">
+                    <span className="text-[9px] font-extrabold uppercase text-emerald-700 block leading-tight">
+                      Dedicated Company Account (1 Branch Only)
+                    </span>
+                    <span className="text-xs sm:text-sm font-extrabold text-slate-900 truncate block">
+                      {currentUser?.shop_name || shops.find((s) => s.id === currentUser?.shop_id)?.name || "Royal Tailors"}
+                    </span>
+                  </div>
+                )
               ) : (
                 <div className="min-w-0">
                   <label className="text-[9px] font-extrabold uppercase text-slate-400 block leading-tight">
@@ -4850,7 +4895,30 @@ export default function TailorManagementApp() {
                       <p className="text-[11px] text-slate-500 truncate">
                         {s.address || "Main Market"}
                       </p>
-                      <div className="mt-2.5 pt-2 border-t border-slate-200 flex items-center justify-between text-[11px]">
+
+                      {/* Super Admin Allowed Branches Limit Controller */}
+                      <div className="mt-2 pt-2 border-t border-slate-200/80 flex items-center justify-between text-xs">
+                        <span className="text-[11px] font-bold text-slate-700 flex items-center gap-1">
+                          <Store className="w-3.5 h-3.5 text-emerald-600" /> Allowed Branches:
+                        </span>
+                        <select
+                          value={s.allowed_branches || 1}
+                          onChange={(e) =>
+                            handleUpdateAllowedBranches(s.id, parseInt(e.target.value, 10))
+                          }
+                          className="px-2 py-0.5 rounded-lg border border-slate-300 text-xs font-black text-slate-900 bg-white"
+                        >
+                          <option value="1">1 Branch (Default)</option>
+                          <option value="2">2 Branches</option>
+                          <option value="3">3 Branches</option>
+                          <option value="4">4 Branches</option>
+                          <option value="5">5 Branches</option>
+                          <option value="10">10 Branches</option>
+                          <option value="20">20 Branches</option>
+                        </select>
+                      </div>
+
+                      <div className="mt-2 pt-2 border-t border-slate-200 flex items-center justify-between text-[11px]">
                         <span className="text-slate-600 font-semibold">
                           📞 {s.phone || "N/A"}
                         </span>

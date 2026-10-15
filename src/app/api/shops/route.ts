@@ -1,17 +1,34 @@
 import { NextRequest, NextResponse } from "next/server";
 import { pool, ensureDbInitialized } from "@/lib/db";
+import { getAuthSession } from "@/lib/auth";
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
     await ensureDbInitialized();
-    const res = await pool.query(`
+    const session = await getAuthSession(req);
+
+    let query = `
       SELECT s.*,
         (SELECT COUNT(*) FROM orders o WHERE o.shop_id = s.id) as total_orders,
         (SELECT COALESCE(SUM(total_amount), 0) FROM orders o WHERE o.shop_id = s.id AND o.status != 'Cancelled') as total_revenue,
         (SELECT COUNT(*) FROM customers c WHERE c.shop_id = s.id) as total_customers
       FROM shops s
-      ORDER BY s.is_active DESC, s.id ASC
-    `);
+    `;
+    const params: unknown[] = [];
+
+    // If not superadmin, only show shops belonging to this user's primary company/branches
+    if (session && session.role !== "superadmin") {
+      if (session.shop_id) {
+        query += ` WHERE s.id = $1 OR s.parent_shop_id = $1 `;
+        params.push(session.shop_id);
+      } else {
+        return NextResponse.json({ shops: [] });
+      }
+    }
+
+    query += ` ORDER BY s.is_active DESC, s.id ASC`;
+
+    const res = await pool.query(query, params);
     return NextResponse.json({ shops: res.rows });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Database error";
@@ -23,6 +40,7 @@ export async function POST(req: NextRequest) {
   const client = await pool.connect();
   try {
     await ensureDbInitialized();
+    const session = await getAuthSession(req);
     const body = await req.json();
     const {
       action,
@@ -34,8 +52,29 @@ export async function POST(req: NextRequest) {
       address,
       receipt_footer,
       is_active,
+      allowed_branches,
+      parent_shop_id,
       performed_by,
     } = body;
+
+    // Super Admin action: update allowed branches limit
+    if (action === "update_allowed_branches") {
+      if (session && session.role !== "superadmin") {
+        return NextResponse.json(
+          { error: "Sirf Super Admin branch limit configure kar sakta hai!" },
+          { status: 403 }
+        );
+      }
+      const limit = Math.max(1, parseInt(allowed_branches || "1", 10));
+      const updRes = await client.query(
+        `UPDATE shops SET allowed_branches = $1 WHERE id = $2 RETURNING *`,
+        [limit, id]
+      );
+      if (updRes.rows.length === 0) {
+        return NextResponse.json({ error: "Shop not found" }, { status: 404 });
+      }
+      return NextResponse.json({ success: true, shop: updRes.rows[0] });
+    }
 
     if (action === "toggle_active") {
       if (!id) {
@@ -183,9 +222,36 @@ export async function POST(req: NextRequest) {
 
       return NextResponse.json({ shop: updateRes.rows[0] });
     } else {
+      // Check branch limit for non-superadmin or when parent_shop_id is specified
+      const targetParentId = parent_shop_id || (session && session.role !== "superadmin" ? session.shop_id : null);
+
+      if (targetParentId) {
+        // Find parent company allowed branches
+        const parentRes = await client.query(
+          "SELECT id, name, allowed_branches FROM shops WHERE id = $1",
+          [targetParentId]
+        );
+        if (parentRes.rows.length > 0) {
+          const maxAllowed = parentRes.rows[0].allowed_branches || 1;
+          const currentBranchesRes = await client.query(
+            "SELECT COUNT(*) FROM shops WHERE id = $1 OR parent_shop_id = $1",
+            [targetParentId]
+          );
+          const currentCount = parseInt(currentBranchesRes.rows[0].count, 10);
+          if (currentCount >= maxAllowed) {
+            return NextResponse.json(
+              {
+                error: `Aapki company ke liye sirf ${maxAllowed} branch(es) allowed hain. Mazeed branches add karne ke liye Super Admin Anas Hussain se rabta karein.`,
+              },
+              { status: 403 }
+            );
+          }
+        }
+      }
+
       const insertRes = await client.query(
-        `INSERT INTO shops (name, branch_code, phone, whatsapp, address, receipt_footer, is_active)
-         VALUES ($1, $2, $3, $4, $5, $6, true)
+        `INSERT INTO shops (name, branch_code, phone, whatsapp, address, receipt_footer, is_active, parent_shop_id, allowed_branches)
+         VALUES ($1, $2, $3, $4, $5, $6, true, $7, 1)
          RETURNING *`,
         [
           name.trim(),
@@ -195,6 +261,7 @@ export async function POST(req: NextRequest) {
           address || "",
           receipt_footer ||
             "Shukriya! Delivery ke waqt yeh Parchi zaroor saath layein.",
+          targetParentId || null,
         ]
       );
 

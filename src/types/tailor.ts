@@ -7,6 +7,8 @@ export interface Shop {
   address: string;
   receipt_footer: string;
   is_active: boolean;
+  allowed_branches?: number;
+  parent_shop_id?: number | null;
   total_orders?: number;
   total_revenue?: number;
   total_customers?: number;
