@@ -1,11 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import { pool, ensureDbInitialized } from "@/lib/db";
+import { getAuthSession } from "@/lib/auth";
 
 export async function GET(req: NextRequest) {
   try {
     await ensureDbInitialized();
+    const session = await getAuthSession(req);
     const { searchParams } = new URL(req.url);
-    const shopId = searchParams.get("shopId");
+    const requestedShopId = searchParams.get("shopId");
+
+    let effectiveShopId: number | null = null;
+    if (session && session.role !== "superadmin") {
+      effectiveShopId = session.shop_id;
+    } else if (requestedShopId && requestedShopId !== "all") {
+      effectiveShopId = Number(requestedShopId);
+    }
 
     let query = `
       SELECT o.*,
@@ -38,9 +47,9 @@ export async function GET(req: NextRequest) {
     `;
 
     const params: (string | number)[] = [];
-    if (shopId && shopId !== "all") {
+    if (effectiveShopId) {
       query += ` WHERE o.shop_id = $1 `;
-      params.push(Number(shopId));
+      params.push(effectiveShopId);
     }
 
     query += ` ORDER BY o.id DESC `;
@@ -280,8 +289,13 @@ export async function POST(req: NextRequest) {
 
     await client.query("BEGIN");
 
+    const session = await getAuthSession(req);
+    let targetShopId = shop_id ? Number(shop_id) : 1;
+    if (session && session.role !== "superadmin" && session.shop_id) {
+      targetShopId = session.shop_id;
+    }
+
     let targetCustomerId = customer_id ? Number(customer_id) : null;
-    const targetShopId = shop_id ? Number(shop_id) : 1;
 
     // If booking for a brand new walk-in customer, create customer first
     if (!targetCustomerId && new_customer?.full_name && new_customer?.phone) {

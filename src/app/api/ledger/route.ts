@@ -1,12 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
 import { pool, ensureDbInitialized } from "@/lib/db";
+import { getAuthSession } from "@/lib/auth";
 
 export async function GET(req: NextRequest) {
   try {
     await ensureDbInitialized();
+    const session = await getAuthSession(req);
     const { searchParams } = new URL(req.url);
-    const shopId = searchParams.get("shopId");
+    const requestedShopId = searchParams.get("shopId");
     const customerId = searchParams.get("customerId");
+
+    let effectiveShopId: number | null = null;
+    if (session && session.role !== "superadmin") {
+      effectiveShopId = session.shop_id;
+    } else if (requestedShopId && requestedShopId !== "all") {
+      effectiveShopId = Number(requestedShopId);
+    }
 
     let query = `
       SELECT pl.*,
@@ -24,8 +33,8 @@ export async function GET(req: NextRequest) {
     `;
 
     const params: (string | number)[] = [];
-    if (shopId && shopId !== "all") {
-      params.push(Number(shopId));
+    if (effectiveShopId) {
+      params.push(effectiveShopId);
       query += ` AND pl.shop_id = $${params.length} `;
     }
     if (customerId) {
@@ -84,6 +93,12 @@ export async function POST(req: NextRequest) {
         ? "Balance Discount / Chhoot"
         : "Manual Udhaar Charge Added");
 
+    const session = await getAuthSession(req);
+    let targetShopId = shop_id ? Number(shop_id) : 1;
+    if (session && session.role !== "superadmin" && session.shop_id) {
+      targetShopId = session.shop_id;
+    }
+
     const insertRes = await client.query(
       `INSERT INTO payments_ledger (receipt_number, customer_id, shop_id, entry_type, amount, payment_method, created_by, description)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
@@ -91,7 +106,7 @@ export async function POST(req: NextRequest) {
       [
         receiptNo,
         Number(customer_id),
-        shop_id ? Number(shop_id) : 1,
+        targetShopId,
         type,
         amt,
         payment_method || "Cash",

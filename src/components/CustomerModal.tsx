@@ -16,6 +16,7 @@ interface CustomerModalProps {
   isOpen: boolean;
   customer: Customer | null;
   shops: Shop[];
+  selectedShopId?: string;
   currentUserName?: string;
   onClose: () => void;
   onSaved: () => void;
@@ -25,6 +26,7 @@ export default function CustomerModal({
   isOpen,
   customer,
   shops,
+  selectedShopId,
   currentUserName,
   onClose,
   onSaved,
@@ -32,11 +34,17 @@ export default function CustomerModal({
   const activeShops = shops.filter((s) => s.is_active);
   const displayShops = activeShops.length > 0 ? activeShops : shops;
 
+  const getEffectiveShopId = () => {
+    if (customer?.shop_id) return String(customer.shop_id);
+    if (selectedShopId && selectedShopId !== "all") return selectedShopId;
+    return String(displayShops[0]?.id || 1);
+  };
+
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
   const [address, setAddress] = useState("");
-  const [shopId, setShopId] = useState("1");
+  const [shopId, setShopId] = useState(getEffectiveShopId());
   const [notes, setNotes] = useState("");
   const [openingBalance, setOpeningBalance] = useState("0");
 
@@ -63,7 +71,7 @@ export default function CustomerModal({
       setPhone(customer.phone || "");
       setWhatsapp(customer.whatsapp || customer.phone || "");
       setAddress(customer.address || "");
-      setShopId(String(customer.shop_id || displayShops[0]?.id || 1));
+      setShopId(String(customer.shop_id || getEffectiveShopId()));
       setNotes(customer.notes || "");
       setOpeningBalance(String(customer.opening_balance || 0));
 
@@ -89,7 +97,7 @@ export default function CustomerModal({
       setPhone("");
       setWhatsapp("");
       setAddress("");
-      setShopId(String(displayShops[0]?.id || 1));
+      setShopId(getEffectiveShopId());
       setNotes("");
       setOpeningBalance("0");
       setMeasurements({
@@ -104,7 +112,7 @@ export default function CustomerModal({
         paincha: "16.5",
       });
     }
-  }, [customer, naapCategory, shops, isOpen]);
+  }, [customer, naapCategory, shops, selectedShopId, isOpen]);
 
   if (!isOpen) return null;
 

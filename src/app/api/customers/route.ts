@@ -1,11 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
 import { pool, ensureDbInitialized } from "@/lib/db";
+import { getAuthSession } from "@/lib/auth";
 
 export async function GET(req: NextRequest) {
   try {
     await ensureDbInitialized();
+    const session = await getAuthSession(req);
     const { searchParams } = new URL(req.url);
-    const shopId = searchParams.get("shopId");
+    const requestedShopId = searchParams.get("shopId");
+
+    let effectiveShopId: number | null = null;
+    if (session && session.role !== "superadmin") {
+      // Non-superadmin users are strictly restricted to their own shop
+      effectiveShopId = session.shop_id;
+    } else if (requestedShopId && requestedShopId !== "all") {
+      effectiveShopId = Number(requestedShopId);
+    }
 
     let query = `
       SELECT c.*,
@@ -24,9 +34,9 @@ export async function GET(req: NextRequest) {
     `;
 
     const params: (string | number)[] = [];
-    if (shopId && shopId !== "all") {
+    if (effectiveShopId) {
       query += ` WHERE c.shop_id = $1 `;
-      params.push(Number(shopId));
+      params.push(effectiveShopId);
     }
 
     query += ` ORDER BY c.id DESC `;
@@ -121,6 +131,12 @@ export async function POST(req: NextRequest) {
     let savedCustomer;
     const actor = performed_by || "Master Anas (Owner / Admin)";
 
+    const session = await getAuthSession(req);
+    let targetShopId = shop_id ? Number(shop_id) : 1;
+    if (session && session.role !== "superadmin" && session.shop_id) {
+      targetShopId = session.shop_id;
+    }
+
     if (id) {
       const existingRes = await client.query(
         "SELECT * FROM customers WHERE id = $1",
@@ -147,7 +163,7 @@ export async function POST(req: NextRequest) {
           phone.trim(),
           whatsapp || phone.trim(),
           address || "",
-          shop_id ? Number(shop_id) : 1,
+          targetShopId,
           notes || "",
           newOpening,
           diff,
@@ -186,7 +202,7 @@ export async function POST(req: NextRequest) {
           phone.trim(),
           whatsapp || phone.trim(),
           address || "",
-          shop_id ? Number(shop_id) : 1,
+          targetShopId,
           notes || "",
           initBal,
         ]

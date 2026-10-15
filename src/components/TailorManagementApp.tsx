@@ -5455,6 +5455,7 @@ export default function TailorManagementApp() {
         isOpen={isCustomerModalOpen}
         customer={editingCustomer}
         shops={shops}
+        selectedShopId={selectedShopId}
         currentUserName={currentUser?.full_name}
         onClose={() => setIsCustomerModalOpen(false)}
         onSaved={() => {

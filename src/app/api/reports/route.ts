@@ -1,13 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
 import { pool, ensureDbInitialized } from "@/lib/db";
+import { getAuthSession } from "@/lib/auth";
 
 export async function GET(req: NextRequest) {
   try {
     await ensureDbInitialized();
+    const session = await getAuthSession(req);
     const { searchParams } = new URL(req.url);
-    const shopId = searchParams.get("shopId");
-    const hasShopFilter = shopId && shopId !== "all";
-    const shopParams = hasShopFilter ? [Number(shopId)] : [];
+    const requestedShopId = searchParams.get("shopId");
+
+    let effectiveShopId: number | null = null;
+    if (session && session.role !== "superadmin") {
+      effectiveShopId = session.shop_id;
+    } else if (requestedShopId && requestedShopId !== "all") {
+      effectiveShopId = Number(requestedShopId);
+    }
+
+    const hasShopFilter = Boolean(effectiveShopId);
+    const shopParams = effectiveShopId ? [effectiveShopId] : [];
 
     // 1. Monthly Sales Breakdown (Current Month vs Previous Months)
     const monthlyQuery = `
