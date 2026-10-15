@@ -292,6 +292,9 @@ export const MEASUREMENT_LABELS: Record<string, string> = {
   hip: "Hip (Seat)",
   thigh: "Thigh (Raan)",
   bottom: "Pant Mori (Bottom)",
+  shawl_length: "Shawl Lambai (Length)",
+  shawl_width: "Shawl Chaurai (Width)",
+  repair_description: "Silai / Rafu Details",
 };
 
 export const EASTERN_FIELDS = [
@@ -304,6 +307,54 @@ export const EASTERN_FIELDS = [
   "collar",
   "shalwar_length",
   "paincha",
+];
+
+export const KAMEEZ_ONLY_FIELDS = [
+  "kameez_length",
+  "tera",
+  "bazu",
+  "chest",
+  "waist",
+  "ghera",
+  "collar",
+];
+
+export const SHALWAR_ONLY_FIELDS = [
+  "shalwar_length",
+  "paincha",
+  "waist",
+];
+
+export const PAJAMA_ONLY_FIELDS = [
+  "shalwar_length",
+  "paincha",
+  "pant_waist",
+];
+
+export const SHIRT_ONLY_FIELDS = [
+  "shirt_length",
+  "tera",
+  "bazu",
+  "chest",
+  "waist",
+  "collar",
+];
+
+export const PANT_ONLY_FIELDS = [
+  "pant_length",
+  "pant_waist",
+  "hip",
+  "thigh",
+  "bottom",
+];
+
+export const SHAWL_FIELDS = [
+  "shawl_length",
+  "shawl_width",
+];
+
+export const REPAIR_FIELDS = [
+  "repair_description",
 ];
 
 export const WESTERN_FIELDS = [

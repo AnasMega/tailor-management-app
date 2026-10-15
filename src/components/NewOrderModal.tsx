@@ -9,6 +9,13 @@ import {
   EASTERN_FIELDS,
   WESTERN_FIELDS,
   FORMAL_FIELDS,
+  KAMEEZ_ONLY_FIELDS,
+  SHALWAR_ONLY_FIELDS,
+  PAJAMA_ONLY_FIELDS,
+  SHIRT_ONLY_FIELDS,
+  PANT_ONLY_FIELDS,
+  SHAWL_FIELDS,
+  REPAIR_FIELDS,
   MEASUREMENT_LABELS,
   STYLE_OPTIONS,
 } from "@/types/tailor";
@@ -24,7 +31,10 @@ import {
   Printer,
   Zap,
   AlertCircle,
+  Tag,
 } from "lucide-react";
+import { GarmentIllustration, GarmentVisualKey, getGarmentVisualKey } from "@/components/GarmentIllustration";
+import { ExtendedNaapCategory } from "./CustomerModal";
 
 interface NewOrderModalProps {
   isOpen: boolean;
@@ -68,9 +78,8 @@ export default function NewOrderModal({
   });
 
   // Naap & Style State
-  const [naapCategory, setNaapCategory] = useState<
-    "Eastern" | "Western" | "Formal"
-  >("Eastern");
+  const [naapCategory, setNaapCategory] =
+    useState<ExtendedNaapCategory>("Shalwar Kameez");
   const [measurements, setMeasurements] = useState<Record<string, string>>({
     kameez_length: "40",
     tera: "18",
@@ -82,6 +91,9 @@ export default function NewOrderModal({
     shalwar_length: "39",
     paincha: "16.5",
   });
+  const [customFields, setCustomFields] = useState<Array<{ id: string; name: string; value: string }>>([]);
+  const [newFieldName, setNewFieldName] = useState("");
+
   const [stylePrefs, setStylePrefs] = useState<Record<string, string>>({
     collar_type: STYLE_OPTIONS.collar_type[0],
     cuff_type: STYLE_OPTIONS.cuff_type[0],
@@ -92,6 +104,128 @@ export default function NewOrderModal({
     special_instructions: "",
   });
   const [saveNaapToProfile, setSaveNaapToProfile] = useState<boolean>(true);
+
+  const naapCategoryOptions: Array<{
+    key: ExtendedNaapCategory;
+    label: string;
+    subLabel: string;
+    visualKey: GarmentVisualKey;
+  }> = [
+    {
+      key: "Shalwar Kameez",
+      label: "Shalwar Kameez",
+      subLabel: "Mukammal Suit",
+      visualKey: "shalwar_kameez",
+    },
+    {
+      key: "Sirf Kameez",
+      label: "Sirf Kameez / Kurta",
+      subLabel: "Upper Kameez",
+      visualKey: "kameez",
+    },
+    {
+      key: "Sirf Shalwar",
+      label: "Sirf Shalwar",
+      subLabel: "Paincha & Shalwar",
+      visualKey: "shalwar",
+    },
+    {
+      key: "Sirf Pajama",
+      label: "Sirf Pajama / Trouser",
+      subLabel: "Elastic Pajama",
+      visualKey: "pajama",
+    },
+    {
+      key: "Pant Shirt",
+      label: "Pant Shirt",
+      subLabel: "Complete Pair",
+      visualKey: "pant_shirt",
+    },
+    {
+      key: "Sirf Shirt",
+      label: "Sirf Shirt",
+      subLabel: "Dress Shirt",
+      visualKey: "shirt",
+    },
+    {
+      key: "Sirf Pant",
+      label: "Sirf Pant / Trouser",
+      subLabel: "Dress Trouser",
+      visualKey: "pant",
+    },
+    {
+      key: "Two / Three Piece Suit",
+      label: "Coat / Two-Three Piece",
+      subLabel: "Formal Suit",
+      visualKey: "suit",
+    },
+    {
+      key: "Waistcoat",
+      label: "Waistcoat (Waskat)",
+      subLabel: "Bespoke Waskat",
+      visualKey: "waistcoat",
+    },
+    {
+      key: "Shawl / Chaddar",
+      label: "Shawl / Chaddar",
+      subLabel: "Piping & Border",
+      visualKey: "shawl",
+    },
+    {
+      key: "Silai / Repair",
+      label: "Choti Moti Silai / Rafu",
+      subLabel: "Tanka & Alteration",
+      visualKey: "repair",
+    },
+    {
+      key: "Custom Silai",
+      label: "Custom Silai Item",
+      subLabel: "Extra Custom Fitting",
+      visualKey: "custom",
+    },
+  ];
+
+  const getStandardFieldsForCategory = (cat: ExtendedNaapCategory): string[] => {
+    switch (cat) {
+      case "Shalwar Kameez":
+        return EASTERN_FIELDS;
+      case "Sirf Kameez":
+        return KAMEEZ_ONLY_FIELDS;
+      case "Sirf Shalwar":
+        return SHALWAR_ONLY_FIELDS;
+      case "Sirf Pajama":
+        return PAJAMA_ONLY_FIELDS;
+      case "Pant Shirt":
+        return WESTERN_FIELDS;
+      case "Sirf Shirt":
+        return SHIRT_ONLY_FIELDS;
+      case "Sirf Pant":
+        return PANT_ONLY_FIELDS;
+      case "Two / Three Piece Suit":
+        return [
+          "coat_length",
+          "tera",
+          "bazu",
+          "chest",
+          "waist",
+          "hip",
+          "collar",
+          "pant_length",
+          "pant_waist",
+          "thigh",
+          "bottom",
+        ];
+      case "Waistcoat":
+        return FORMAL_FIELDS;
+      case "Shawl / Chaddar":
+        return SHAWL_FIELDS;
+      case "Silai / Repair":
+        return REPAIR_FIELDS;
+      case "Custom Silai":
+      default:
+        return [];
+    }
+  };
 
   // Order Items
   const [items, setItems] = useState<
@@ -233,13 +367,57 @@ export default function NewOrderModal({
       )
     );
 
-    if (
-      foundG.category === "Eastern" ||
-      foundG.category === "Western" ||
-      foundG.category === "Formal"
-    ) {
-      setNaapCategory(foundG.category);
+    const gName = foundG.name.toLowerCase();
+    if (gName.includes("shawl") || gName.includes("chaddar")) {
+      setNaapCategory("Shawl / Chaddar");
+    } else if (gName.includes("repair") || gName.includes("rafu") || gName.includes("tanka") || gName.includes("choti moti")) {
+      setNaapCategory("Silai / Repair");
+    } else if (gName.includes("two piece") || gName.includes("three piece") || gName.includes("safari") || (gName.includes("suit") && !gName.includes("shalwar"))) {
+      setNaapCategory("Two / Three Piece Suit");
+    } else if (gName.includes("waistcoat") || gName.includes("waskat")) {
+      setNaapCategory("Waistcoat");
+    } else if (gName.includes("pant shirt") || (gName.includes("pant") && gName.includes("shirt"))) {
+      setNaapCategory("Pant Shirt");
+    } else if (gName.includes("sirf shirt") || gName.includes("only shirt") || gName.includes("dress shirt")) {
+      setNaapCategory("Sirf Shirt");
+    } else if (gName.includes("sirf pant") || gName.includes("only pant") || gName.includes("dress trouser")) {
+      setNaapCategory("Sirf Pant");
+    } else if (gName.includes("pajama")) {
+      setNaapCategory("Sirf Pajama");
+    } else if (gName.includes("sirf shalwar") || gName.includes("only shalwar")) {
+      setNaapCategory("Sirf Shalwar");
+    } else if (gName.includes("sirf kameez") || gName.includes("only kameez") || gName.includes("kurta")) {
+      setNaapCategory("Sirf Kameez");
+    } else if (gName.includes("custom")) {
+      setNaapCategory("Custom Silai");
+    } else if (foundG.category === "Western") {
+      setNaapCategory("Pant Shirt");
+    } else if (foundG.category === "Formal") {
+      setNaapCategory("Two / Three Piece Suit");
+    } else {
+      setNaapCategory("Shalwar Kameez");
     }
+  };
+
+  const handleAddCustomField = () => {
+    if (!newFieldName.trim()) return;
+    const cleanName = newFieldName.trim();
+    if (customFields.some((f) => f.name.toLowerCase() === cleanName.toLowerCase())) {
+      setError(`Field "${cleanName}" already exists.`);
+      return;
+    }
+    const newId = `custom_${Date.now()}`;
+    setCustomFields((prev) => [...prev, { id: newId, name: cleanName, value: "" }]);
+    setNewFieldName("");
+  };
+
+  const handleRemoveCustomField = (id: string, name: string) => {
+    setCustomFields((prev) => prev.filter((f) => f.id !== id));
+    setMeasurements((prev) => {
+      const copy = { ...prev };
+      delete copy[name];
+      return copy;
+    });
   };
 
   const subtotal = items.reduce(
@@ -252,12 +430,8 @@ export default function NewOrderModal({
   const advVal = Number(advancePaid || 0);
   const balanceDue = totalAmount - advVal;
 
-  const activeFields =
-    naapCategory === "Western"
-      ? WESTERN_FIELDS
-      : naapCategory === "Formal"
-      ? FORMAL_FIELDS
-      : EASTERN_FIELDS;
+  const activeStandardFields = getStandardFieldsForCategory(naapCategory);
+  const selectedOption = naapCategoryOptions.find((o) => o.key === naapCategory);
 
   const filteredCustomers = customers.filter((c) => {
     if (!customerSearch.trim()) return true;
@@ -279,6 +453,13 @@ export default function NewOrderModal({
     setError("");
 
     try {
+      const finalMeasurements = { ...measurements };
+      for (const cf of customFields) {
+        if (cf.name && cf.value) {
+          finalMeasurements[cf.name] = cf.value;
+        }
+      }
+
       const payload = {
         customer_id: customerMode === "existing" ? Number(customerId) : null,
         new_customer: customerMode === "new" ? newCustomer : null,
@@ -297,7 +478,7 @@ export default function NewOrderModal({
         items,
         save_measurements_to_profile: saveNaapToProfile,
         measurement_category: naapCategory,
-        customer_measurements: measurements,
+        customer_measurements: finalMeasurements,
         customer_style_preferences: stylePrefs,
       };
 
@@ -587,8 +768,16 @@ export default function NewOrderModal({
               {items.map((item, idx) => (
                 <div
                   key={idx}
-                  className="grid grid-cols-1 sm:grid-cols-12 gap-3 p-3.5 bg-slate-50 border border-slate-200 rounded-xl items-end"
+                  className="grid grid-cols-1 sm:grid-cols-12 gap-3 p-3.5 bg-slate-50 border border-slate-200 rounded-xl items-center"
                 >
+                  <div className="sm:col-span-1 flex items-center justify-center">
+                    <GarmentIllustration
+                      name={item.garment_name}
+                      size="sm"
+                      className="border border-slate-200 bg-white rounded-lg p-0.5"
+                    />
+                  </div>
+
                   <div className="sm:col-span-4">
                     <label className="block text-[11px] font-bold uppercase text-slate-500 mb-1">
                       Garment Type (From Rate Card)
@@ -674,27 +863,6 @@ export default function NewOrderModal({
                     />
                   </div>
 
-                  <div className="sm:col-span-2">
-                    <label className="block text-[11px] font-bold uppercase text-slate-500 mb-1">
-                      Design / Note
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="e.g. Ban collar"
-                      value={item.stitching_notes}
-                      onChange={(e) =>
-                        setItems((prev) =>
-                          prev.map((it, i) =>
-                            i === idx
-                              ? { ...it, stitching_notes: e.target.value }
-                              : it
-                          )
-                        )
-                      }
-                      className="w-full px-2.5 py-2 border border-slate-300 rounded-lg text-sm bg-white"
-                    />
-                  </div>
-
                   <div className="sm:col-span-1 flex items-center justify-end gap-1">
                     {items.length > 1 && (
                       <button
@@ -713,61 +881,176 @@ export default function NewOrderModal({
           </div>
 
           {/* STEP 3: Customer Naap (Measurements) & Fitting Style */}
-          <div className="bg-amber-50/50 border border-amber-200 rounded-2xl p-5">
-            <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+          <div className="bg-amber-50/70 border border-amber-200 rounded-2xl p-5 space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="flex items-center gap-2">
-                <Ruler className="w-4 h-4 text-amber-700" />
-                <h3 className="font-bold text-slate-900 text-sm uppercase tracking-wider">
-                  3. Customer Naap (Measurements in Inches) & Design
-                </h3>
+                <Ruler className="w-5 h-5 text-amber-700" />
+                <div>
+                  <h3 className="font-extrabold text-slate-900 text-sm uppercase tracking-wider">
+                    3. Customer Naap (Measurements in Inches) & Visual Garment Type
+                  </h3>
+                  <p className="text-xs text-slate-600">
+                    Kis cheez ka naap liya ja raha hai? Asli tasweer aur specific fitting fields neeche show hongi.
+                  </p>
+                </div>
               </div>
 
-              <div className="flex flex-wrap items-center gap-2">
-                {(["Eastern", "Western", "Formal"] as const).map((cat) => (
-                  <button
-                    key={cat}
-                    type="button"
-                    onClick={() => setNaapCategory(cat)}
-                    className={`px-3 py-1 rounded-lg text-xs font-bold transition ${
-                      naapCategory === cat
-                        ? "bg-amber-600 text-white shadow-sm"
-                        : "bg-white text-slate-700 border border-amber-200 hover:bg-amber-100"
-                    }`}
-                  >
-                    {cat === "Eastern"
-                      ? "Shalwar Kameez / Kurta Naap"
-                      : cat === "Western"
-                      ? "Pant Shirt Naap"
-                      : "Waistcoat / Coat Naap"}
-                  </button>
-                ))}
-              </div>
+              {selectedOption && (
+                <div className="flex items-center gap-3 bg-white px-3 py-1.5 rounded-xl border border-amber-300 shadow-sm">
+                  <GarmentIllustration typeKey={selectedOption.visualKey} size="sm" />
+                  <div>
+                    <span className="text-[10px] text-amber-700 font-bold block uppercase tracking-wider">
+                      Selected Garment
+                    </span>
+                    <span className="text-xs font-extrabold text-slate-900">
+                      {selectedOption.label}
+                    </span>
+                  </div>
+                </div>
+              )}
             </div>
 
-            {/* Measurement Inputs Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 mb-4">
-              {activeFields.map((fieldKey) => (
-                <div
-                  key={fieldKey}
-                  className="bg-white p-2.5 rounded-xl border border-amber-200"
-                >
-                  <label className="block text-[11px] font-bold text-slate-600 mb-1">
-                    {MEASUREMENT_LABELS[fieldKey] || fieldKey}
-                  </label>
+            {/* Visual Garment Type Selection Cards */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2.5">
+              {naapCategoryOptions.map((opt) => {
+                const isSelected = naapCategory === opt.key;
+                return (
+                  <button
+                    key={opt.key}
+                    type="button"
+                    onClick={() => setNaapCategory(opt.key)}
+                    className={`flex flex-col items-center text-center p-2 rounded-xl border-2 transition-all relative ${
+                      isSelected
+                        ? "bg-amber-500/10 border-amber-600 shadow-sm ring-2 ring-amber-500/30 text-slate-900"
+                        : "bg-white border-slate-200 hover:border-amber-300 text-slate-700 hover:bg-amber-50/40"
+                    }`}
+                  >
+                    <GarmentIllustration typeKey={opt.visualKey} size="sm" className="mb-1" />
+                    <span className="text-xs font-bold leading-tight line-clamp-1">
+                      {opt.label}
+                    </span>
+                    <span className="text-[10px] text-slate-500 leading-tight line-clamp-1 mt-0.5">
+                      {opt.subLabel}
+                    </span>
+                    {isSelected && (
+                      <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-amber-600" />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Standard Measurement Inputs */}
+            {activeStandardFields.length > 0 && (
+              <div>
+                <label className="block text-xs font-bold uppercase text-slate-700 mb-2">
+                  Standard {selectedOption?.label} Measurements (Inches)
+                </label>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+                  {activeStandardFields.map((fieldKey) => (
+                    <div
+                      key={fieldKey}
+                      className="bg-white p-2.5 rounded-xl border border-amber-200 shadow-sm"
+                    >
+                      <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                        {MEASUREMENT_LABELS[fieldKey] || fieldKey}
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="Inches"
+                        value={measurements[fieldKey] || ""}
+                        onChange={(e) =>
+                          setMeasurements({
+                            ...measurements,
+                            [fieldKey]: e.target.value,
+                          })
+                        }
+                        className="w-full px-2.5 py-1.5 border border-slate-300 rounded-lg text-sm font-bold text-slate-900 focus:ring-2 focus:ring-amber-500/30 outline-none"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Custom Extra Naap Fields */}
+            <div className="bg-white p-4 rounded-xl border border-amber-200 shadow-sm space-y-3">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <h5 className="font-bold text-slate-900 text-xs uppercase flex items-center gap-1.5">
+                    <Tag className="w-3.5 h-3.5 text-amber-700" />
+                    Custom Extra Naap Fields (Kisi Bhi Cheez Ka Extra Naap)
+                  </h5>
+                  <p className="text-[11px] text-slate-500">
+                    Agar kisi specific hissay ya custom cheez ka extra naap lena hai to yahan field ka naam likh kar add karein.
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2">
                   <input
                     type="text"
-                    placeholder="Inches"
-                    value={measurements[fieldKey] || ""}
-                    onChange={(e) =>
-                      setMeasurements({
-                        ...measurements,
-                        [fieldKey]: e.target.value,
-                      })
-                    }
-                    className="w-full px-2.5 py-1.5 border border-slate-300 rounded-lg text-sm font-bold text-slate-900 focus:ring-2 focus:ring-amber-500 outline-none"
+                    placeholder="Field Name (e.g. Belt, Pocket, Goth, Border)"
+                    value={newFieldName}
+                    onChange={(e) => setNewFieldName(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        handleAddCustomField();
+                      }
+                    }}
+                    className="px-3 py-1.5 border border-slate-300 rounded-lg text-xs font-semibold w-64"
                   />
+                  <button
+                    type="button"
+                    onClick={handleAddCustomField}
+                    className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs font-bold flex items-center gap-1 shadow-sm transition"
+                  >
+                    <Plus className="w-3.5 h-3.5" />+ Add Field
+                  </button>
                 </div>
-              ))}
+              </div>
+
+              {customFields.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 pt-2">
+                  {customFields.map((cf) => (
+                    <div
+                      key={cf.id}
+                      className="p-2.5 bg-amber-50/50 border border-amber-300 rounded-xl flex items-center gap-2"
+                    >
+                      <div className="flex-1">
+                        <label className="block text-[11px] font-bold text-amber-950 mb-1 truncate">
+                          {cf.name} (Custom Naap)
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="Value / Inches / Note"
+                          value={cf.value}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setCustomFields((prev) =>
+                              prev.map((f) => (f.id === cf.id ? { ...f, value: val } : f))
+                            );
+                            setMeasurements((prev) => ({ ...prev, [cf.name]: val }));
+                          }}
+                          className="w-full px-2.5 py-1.5 border border-slate-300 rounded-lg text-xs font-bold text-slate-900 bg-white"
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveCustomField(cf.id, cf.name)}
+                        className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition"
+                        title="Remove custom field"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-[11px] text-slate-400 italic">
+                  Koi custom field add nahi ki gayi. Upar se field ka naam likh kar &quot;+ Add Field&quot; dabayein.
+                </p>
+              )}
             </div>
 
             {/* Style Preferences Dropdowns */}

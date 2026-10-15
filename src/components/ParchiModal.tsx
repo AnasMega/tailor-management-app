@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { Order, MEASUREMENT_LABELS } from "@/types/tailor";
 import { Printer, X, Scissors, Calendar, Phone, MapPin, CheckCircle2, FileText, Receipt } from "lucide-react";
+import { GarmentIllustration } from "@/components/GarmentIllustration";
 
 interface ParchiModalProps {
   order: Order | null;
@@ -239,19 +240,28 @@ export default function ParchiModal({ order, onClose }: ParchiModalProps) {
                   {(order.items || []).map((item, idx) => (
                     <tr key={idx} className="align-top">
                       <td className="py-2.5 pr-2">
-                        <div className="font-bold text-slate-900">
-                          {idx + 1}. {item.garment_name}
+                        <div className="flex items-start gap-2.5">
+                          <GarmentIllustration
+                            name={item.garment_name}
+                            size="sm"
+                            className="border border-slate-200 bg-white rounded p-0.5 mt-0.5"
+                          />
+                          <div>
+                            <div className="font-bold text-slate-900">
+                              {idx + 1}. {item.garment_name}
+                            </div>
+                            {item.fabric_details && (
+                              <div className="text-xs text-slate-600">
+                                Kapra / Color: <strong>{item.fabric_details}</strong>
+                              </div>
+                            )}
+                            {item.stitching_notes && (
+                              <div className="text-xs text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded mt-1 inline-block">
+                                Note: {item.stitching_notes}
+                              </div>
+                            )}
+                          </div>
                         </div>
-                        {item.fabric_details && (
-                          <div className="text-xs text-slate-600">
-                            Kapra / Color: <strong>{item.fabric_details}</strong>
-                          </div>
-                        )}
-                        {item.stitching_notes && (
-                          <div className="text-xs text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded mt-1 inline-block">
-                            Note: {item.stitching_notes}
-                          </div>
-                        )}
 
                         {/* Show Full Naap Snapshot in Karigar Slip Mode (or compact summary in Invoice) */}
                         {item.measurement_snapshot &&

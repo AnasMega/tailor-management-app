@@ -22,6 +22,7 @@ import DeliverOrderModal from "@/components/DeliverOrderModal";
 import NewOrderModal from "@/components/NewOrderModal";
 import CustomerModal from "@/components/CustomerModal";
 import ComplaintModal from "@/components/ComplaintModal";
+import { GarmentIllustration } from "@/components/GarmentIllustration";
 import {
   Scissors,
   LayoutDashboard,
@@ -2412,18 +2413,25 @@ export default function TailorManagementApp() {
 
                           <td className="py-4 px-4">
                             {(ord.items || []).map((it, idx) => (
-                              <div key={idx} className="mb-1 last:mb-0">
-                                <span className="font-bold text-slate-900 text-xs">
-                                  {it.quantity}x {it.garment_name}
-                                </span>{" "}
-                                <span className="text-xs text-slate-500">
-                                  @ Rs. {Number(it.unit_price).toLocaleString()}
-                                </span>
-                                {it.fabric_details && (
-                                  <p className="text-[11px] text-slate-500">
-                                    Fabric: {it.fabric_details}
-                                  </p>
-                                )}
+                              <div key={idx} className="mb-1.5 last:mb-0 flex items-start gap-2">
+                                <GarmentIllustration
+                                  name={it.garment_name}
+                                  size="sm"
+                                  className="border border-slate-200 bg-white rounded p-0.5 mt-0.5 shrink-0"
+                                />
+                                <div>
+                                  <span className="font-bold text-slate-900 text-xs">
+                                    {it.quantity}x {it.garment_name}
+                                  </span>{" "}
+                                  <span className="text-xs text-slate-500">
+                                    @ Rs. {Number(it.unit_price).toLocaleString()}
+                                  </span>
+                                  {it.fabric_details && (
+                                    <p className="text-[11px] text-slate-500">
+                                      Fabric: {it.fabric_details}
+                                    </p>
+                                  )}
+                                </div>
                               </div>
                             ))}
                             {ord.notes && (
@@ -3008,7 +3016,15 @@ export default function TailorManagementApp() {
                         {garments.map((g) => (
                           <tr key={g.id} className="hover:bg-slate-50">
                             <td className="py-3 px-4 font-bold text-slate-900">
-                              {g.name}
+                              <div className="flex items-center gap-2.5">
+                                <GarmentIllustration
+                                  name={g.name}
+                                  category={g.category}
+                                  size="sm"
+                                  className="border border-slate-200 bg-white rounded p-0.5 shrink-0"
+                                />
+                                <span>{g.name}</span>
+                              </div>
                             </td>
                             <td className="py-3 px-4">
                               <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-100 text-slate-700">
